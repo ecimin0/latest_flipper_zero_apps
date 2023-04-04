@@ -189,7 +189,10 @@ static void draw_results(const State* state, Canvas* canvas) {
 }
 
 static void draw_callback(Canvas* canvas, void* ctx) {
-    const State* state = acquire_mutex((ValueMutex*)ctx, 25);
+    // const State* state = acquire_mutex((ValueMutex*)ctx, 25);
+
+    const State* state = ctx;
+    furi_mutex_acquire(state->mutex, FuriWaitForever);
     if(state == NULL) {
         return;
     }
@@ -204,7 +207,8 @@ static void draw_callback(Canvas* canvas, void* ctx) {
         draw_dice(state, canvas);
     }
 
-    release_mutex((ValueMutex*)ctx, state);
+    // release_mutex((ValueMutex*)ctx, state);
+    furi_mutex_release(state->mutex);
 }
 
 static void input_callback(InputEvent* input_event, FuriMessageQueue* event_queue) {
@@ -230,8 +234,10 @@ int32_t dice_dnd_app(void* p) {
     State* state = malloc(sizeof(State));
     init(state);
 
-    ValueMutex state_mutex;
-    if(!init_mutex(&state_mutex, state, sizeof(State))) {
+    // ValueMutex state_mutex;
+    // if(!init_mutex(&state_mutex, state, sizeof(State))) {
+        state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+        if(!state->mutex) {
         FURI_LOG_E(TAG, "cannot create mutex\r\n");
         free(state);
         return 255;
@@ -239,7 +245,8 @@ int32_t dice_dnd_app(void* p) {
 
     // Set callbacks
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, draw_callback, &state_mutex);
+    // view_port_draw_callback_set(view_port, draw_callback, &state_mutex);
+    view_port_draw_callback_set(view_port, draw_callback, state);
     view_port_input_callback_set(view_port, input_callback, event_queue);
 
     FuriTimer* timer = furi_timer_alloc(timer_callback, FuriTimerTypePeriodic, event_queue);
@@ -252,7 +259,8 @@ int32_t dice_dnd_app(void* p) {
     AppEvent event;
     for(bool processing = true; processing;) {
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 100);
-        State* state = (State*)acquire_mutex_block(&state_mutex);
+        // State* state = (State*)acquire_mutex_block(&state_mutex);
+        furi_mutex_acquire(state->mutex, FuriWaitForever);
 
         if(event_status == FuriStatusOk) {
             // timer evetn
@@ -316,10 +324,12 @@ int32_t dice_dnd_app(void* p) {
         }
 
         view_port_update(view_port);
-        release_mutex(&state_mutex, state);
+        // release_mutex(&state_mutex, state);
+        furi_mutex_release(state->mutex);
     }
 
     // Clear
+    furi_mutex_free(state->mutex);
     free(state);
     furi_timer_free(timer);
     furi_message_queue_free(event_queue);
@@ -327,7 +337,5 @@ int32_t dice_dnd_app(void* p) {
     gui_remove_view_port(gui, view_port);
     furi_record_close(RECORD_GUI);
     view_port_free(view_port);
-    delete_mutex(&state_mutex);
-
     return 0;
 }

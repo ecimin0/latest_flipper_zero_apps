@@ -4,12 +4,13 @@
 #include <stdlib.h>
 #include <counter_icons.h>
 
-#define MAX_COUNT 99
+// #define MAX_COUNT 32767
 #define BOXTIME 2
 #define BOXWIDTH 30
-#define MIDDLE_X 64 - BOXWIDTH / 2
-#define MIDDLE_Y 32 - BOXWIDTH / 2
-#define OFFSET_Y 9
+#define MIDDLE_X 64 - BOXWIDTH / 2 // 49
+#define MIDDLE_Y 32 - BOXWIDTH / 2 // 17
+// #define OFFSET_Y 9
+#define OFFSET_Y 6
 
 typedef struct {
     FuriMessageQueue* input_queue;
@@ -44,20 +45,27 @@ static void render_callback(Canvas* canvas, void* ctx) {
     canvas_clear(canvas);
     canvas_set_color(canvas, ColorBlack);
     canvas_set_font(canvas, FontPrimary);
-    canvas_draw_str_aligned(canvas, 64, 10, AlignCenter, AlignCenter, "Counter :)");
+    canvas_draw_str_aligned(canvas, 64, 10, AlignCenter, AlignCenter, "Counter");
     canvas_set_font(canvas, FontBigNumbers);
+    // canvas_set_font(canvas, FontPrimary);
 
     char scount[5];
     if(c->pressed == true || c->boxtimer > 0) {
-        canvas_draw_rframe(canvas, MIDDLE_X, MIDDLE_Y + OFFSET_Y, BOXWIDTH, BOXWIDTH, 5);
+        // canvas_draw_rframe(canvas, MIDDLE_X, MIDDLE_Y + OFFSET_Y, BOXWIDTH * 2, BOXWIDTH, 5);
+        // canvas_draw_rframe(
+        //     canvas, MIDDLE_X - 1, MIDDLE_Y + OFFSET_Y - 1, BOXWIDTH * 2 + 2, BOXWIDTH + 2, 5);
+        // canvas_draw_rframe(
+        //     canvas, MIDDLE_X - 2, MIDDLE_Y + OFFSET_Y - 2, BOXWIDTH * 2 + 4, BOXWIDTH + 4, 5);
+        canvas_draw_rframe(canvas, 34, MIDDLE_Y + OFFSET_Y, BOXWIDTH * 2, BOXWIDTH, 5);
         canvas_draw_rframe(
-            canvas, MIDDLE_X - 1, MIDDLE_Y + OFFSET_Y - 1, BOXWIDTH + 2, BOXWIDTH + 2, 5);
+            canvas, 34 - 1, MIDDLE_Y + OFFSET_Y - 1, BOXWIDTH * 2 + 2, BOXWIDTH + 2, 5);
         canvas_draw_rframe(
-            canvas, MIDDLE_X - 2, MIDDLE_Y + OFFSET_Y - 2, BOXWIDTH + 4, BOXWIDTH + 4, 5);
+            canvas, 34 - 2, MIDDLE_Y + OFFSET_Y - 2, BOXWIDTH * 2 + 4, BOXWIDTH + 4, 5);
         c->pressed = false;
         c->boxtimer--;
     } else {
-        canvas_draw_rframe(canvas, MIDDLE_X, MIDDLE_Y + OFFSET_Y, BOXWIDTH, BOXWIDTH, 5);
+        // canvas_draw_rframe(canvas, MIDDLE_X, MIDDLE_Y + OFFSET_Y, BOXWIDTH, BOXWIDTH, 10);
+        canvas_draw_rframe(canvas, 34, MIDDLE_Y + OFFSET_Y, BOXWIDTH * 2, BOXWIDTH, 10);
     }
     snprintf(scount, sizeof(scount), "%d", c->count);
     canvas_draw_str_aligned(canvas, 64, 32 + OFFSET_Y, AlignCenter, AlignCenter, scount);
@@ -90,11 +98,13 @@ int32_t counterapp(void) {
                 furi_mutex_release(c->mutex);
                 state_free(c);
                 return 0;
-            } else if(input.key == InputKeyUp && c->count < MAX_COUNT) {
+            // } else if(input.key == InputKeyUp && c->count < MAX_COUNT) {
+            } else if(input.key == InputKeyUp) {
                 c->pressed = true;
                 c->boxtimer = BOXTIME;
                 c->count++;
-            } else if(input.key == InputKeyDown && c->count != 0) {
+            // } else if(input.key == InputKeyDown && c->count != 0) {
+            } else if(input.key == InputKeyDown) {
                 c->pressed = true;
                 c->boxtimer = BOXTIME;
                 c->count--;
