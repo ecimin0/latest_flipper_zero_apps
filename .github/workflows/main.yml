@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: checkout this repo
-    - uses: actions/checkout@v3
+      uses: actions/checkout@v3
     - name: checkout flipper zero firmware repo
       uses: actions/checkout@v3
       with:
