@@ -10,6 +10,7 @@ jobs:
     steps:
     - name: checkout this repo
       uses: actions/checkout@v3
+
     - name: checkout flipper zero firmware repo
       uses: actions/checkout@v3
       with:
@@ -20,7 +21,7 @@ jobs:
       run: mv source/* flipperzero-firmware/applications_user
 
     - name: build applications
-    - run: './fbt faps'
+      run: './fbt faps'
     
     - name: move built applications
-    - run: mv 'flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap' './new_apps'
+      run: mv 'flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap' './new_apps'
