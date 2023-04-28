@@ -6,16 +6,13 @@ on:
 jobs:
   build_app:
 
+    strategy:
+      matrix:
+        firmware_branch: [dev, release-candidate, release]
+
     name: build application
     runs-on: ubuntu-latest
     steps:
-    
-#     - name: install packages
-#       run: |
-#           sudo apt-get update -qq
-#           sudo apt-get install -y gcc-multilib python3 curl zip unzip
-#           sudo apt-get install -y --no-install-recommends libx11-dev libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev libxext-dev libxfixes-dev libgl1-mesa-dev
-
     - name: checkout this repo
       uses: actions/checkout@v3
 
@@ -24,13 +21,15 @@ jobs:
       with:
         repository: flipperdevices/flipperzero-firmware
         path: './flipperzero-firmware'
-#         submodules: true
+        submodules: true
+      env:
+        CC: ${{ matrix.firmware_branch }}
 
     - name: move app source code files
       run: mv source/* flipperzero-firmware/applications_user
 
     - name: build applications
-      run: cd flipperzero-firmware && ./fbt faps
+      run: cd flipperzero-firmware && ./fbt fap_counter
     
 #     - name: move built applications
 #       run: mv 'flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap' './new_apps'
