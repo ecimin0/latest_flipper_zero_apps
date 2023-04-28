@@ -22,8 +22,7 @@ jobs:
         repository: flipperdevices/flipperzero-firmware
         path: './flipperzero-firmware'
         submodules: true
-      env:
-        CC: ${{ matrix.firmware_branch }}
+        ref: ${{ matrix.firmware_branch }}
 
     - name: move app source code files
       run: mv source/* flipperzero-firmware/applications_user
