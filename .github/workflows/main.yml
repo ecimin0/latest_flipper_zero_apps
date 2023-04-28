@@ -8,16 +8,19 @@ jobs:
     name: build application
     runs-on: ubuntu-latest
     steps:
+    - name: checkout this repo
     - uses: actions/checkout@v3
-    - name: Checkout
+    - name: checkout flipper zero firmware repo
       uses: actions/checkout@v3
       with:
         repository: flipperdevices/flipperzero-firmware
         path: './flipperzero-firmware'
 
-    - name: move files
-      run: mv source/* flipperzero-firmware/applications_user && ls flipperzero-firmware/applications_user
+    - name: move app source code files
+      run: mv source/* flipperzero-firmware/applications_user
 
-
-#     - name: build
-#     - run: './fbt faps'
+    - name: build applications
+    - run: './fbt faps'
+    
+    - name: move built applications
+    - run: mv flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap ./new_apps
