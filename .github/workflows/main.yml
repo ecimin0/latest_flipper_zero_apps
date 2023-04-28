@@ -1,0 +1,12 @@
+on:
+  push:
+    branches:
+    - update_apps
+    
+jobs:
+  build_app:
+    name: build application
+    runs-on: ubuntu-latest
+    steps:
+    - name: build
+    - run: './fbt faps'
