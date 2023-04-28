@@ -24,7 +24,7 @@ jobs:
       with:
         repository: flipperdevices/flipperzero-firmware
         path: './flipperzero-firmware'
-        submodules: true
+#         submodules: true
 
     - name: move app source code files
       run: mv source/* flipperzero-firmware/applications_user
