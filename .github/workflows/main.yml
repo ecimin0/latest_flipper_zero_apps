@@ -16,7 +16,7 @@ jobs:
         path: './flipperzero-firmware'
 
     - name: move files
-      run: pwd && ls flipperzero-firmware
+      run: pwd && ls
 
 
 #     - name: build
