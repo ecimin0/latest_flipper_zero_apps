@@ -48,11 +48,8 @@ static void input_callback(InputEvent* input_event, void* ctx) {
 void int_to_binary(char* buf, int16_t n) {
     int16_t num = n;
     for (int16_t i = 15; i >= 0; i--) {
-        //printf("%d %d %d\n", i, 16 - i, num);
         buf[i] = (num & 1) + '0';
         num >>= 1;
-        //printf("%c\n", buf[16 - i]);
-        //printf("%d\n", num);
     }
     buf[16] = '\0';
 		printf("%s\n", buf);
@@ -72,7 +69,6 @@ static void render_callback(Canvas* canvas, void* ctx) {
         canvas_draw_str_aligned(canvas, 64, 10, AlignCenter, AlignCenter, "Counter");
     }
     canvas_set_font(canvas, FontBigNumbers);
-    // canvas_set_font(canvas, FontSecondary);
     char scount[17];
     // if(c->pressed == true || c->boxtimer > 0) {
     //     // canvas_draw_rframe(canvas, MIDDLE_X, MIDDLE_Y + OFFSET_Y, BOXWIDTH * 2, BOXWIDTH, 5);
@@ -140,7 +136,6 @@ int32_t counterapp(void) {
                 c->pressed = true;
                 c->boxtimer = BOXTIME;
                 c->count += 100;
-            // } else if(input.key == InputKeyDown && c->count != 0) {
             } else if(input.key == InputKeyDown && c->count > MIN_COUNT && input.type == InputTypeShort) {
                 c->pressed = true;
                 c->boxtimer = BOXTIME;
@@ -153,15 +148,12 @@ int32_t counterapp(void) {
                 c->pressed = true;
                 c->boxtimer = BOXTIME;
                 c->count = 0;
-            } else if(input.key == InputKeyOk && input.type == InputTypeLong && !c->skuldug) {
-                c->skuldug = true;
-                c->pressed = true;
-                c->boxtimer = BOXTIME;
-                // c->count = 0;
-            } else if(input.key == InputKeyOk && input.type == InputTypeLong && c->skuldug) {
-                c->skuldug = false;
-                c->pressed = true;
-                c->boxtimer = BOXTIME;
+            } else if(input.key == InputKeyOk && input.type == InputTypeLong) {
+                if(!c->skuldug) {
+                    c->skuldug = true;
+                } else {
+                    c->skuldug = false;
+                }
             } else if (input.key == InputKeyLeft) {
                 c->pressed = true;
                 c->boxtimer = BOXTIME;
