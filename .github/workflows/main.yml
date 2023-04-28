@@ -8,5 +8,37 @@ jobs:
     name: build application
     runs-on: ubuntu-latest
     steps:
-    - name: build
-    - run: './fbt faps'
+#     - name: Clone Github Repo Action
+#       # You may pin to the exact commit or the version.
+#       # uses: GuillaumeFalourd/clone-github-repo-action@8e2d67e601742dcfd167324473bb9ae3f05d203e
+#       uses: GuillaumeFalourd/clone-github-repo-action@v2
+#       with:
+#         # Repository Owner
+#         owner: flipperdevices
+#         # Repository name
+#         repository: flipperzero-firmware
+#         # PAT with repository scope (https://github.com/settings/tokens)
+#         # access-token: # optional
+    - name: Checkout From Tag
+      # You may pin to the exact commit or the version.
+      # uses: AlexAtkinson/github-action-checkout-from-tag@0b3bee85751af56dd00a3cae02684aa69a94b8e3
+      uses: AlexAtkinson/github-action-checkout-from-tag@0.2.1
+      with:
+        # The repository to clone.
+        repo: https://github.com/flipperdevices/flipperzero-firmware
+        # Required for cloning private repositories in other organizations.
+        # ssh-token: # optional
+        # The tag (or commit hash) to clone to.
+        tag: HEAD
+        # The target directory to clone into.
+        # dir: # optional, default is $GITHUB_WORKSPACE
+        # Output the detected depth only.
+        # output-depth-only: # optional, default is false
+
+
+    - name: move files
+      run: ls $GITHUB_WORKSPACE
+
+
+#     - name: build
+#     - run: './fbt faps'
