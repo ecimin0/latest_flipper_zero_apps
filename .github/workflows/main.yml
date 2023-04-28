@@ -2,9 +2,13 @@ on:
   push:
     branches:
     - main
-    
+
 jobs:
   build_app:
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+
     name: build application
     runs-on: ubuntu-latest
     steps:
@@ -17,6 +21,8 @@ jobs:
         repository: flipperdevices/flipperzero-firmware
         path: './flipperzero-firmware'
         submodules: true
+      env:
+        CC: ${{ matrix.compiler }}
 
     - name: move app source code files
       run: mv source/* flipperzero-firmware/applications_user
@@ -24,5 +30,5 @@ jobs:
     - name: build applications
       run: './flipperzero-firmware/fbt faps'
     
-    - name: move built applications
-      run: mv 'flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap' './new_apps'
+#     - name: move built applications
+#       run: mv 'flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap' './new_apps'
