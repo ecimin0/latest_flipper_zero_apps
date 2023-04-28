@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-    - update_apps
+    - main
     
 jobs:
   build_app:
