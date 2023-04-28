@@ -23,4 +23,4 @@ jobs:
     - run: './fbt faps'
     
     - name: move built applications
-    - run: mv flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap ./new_apps
+    - run: mv 'flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap' './new_apps'
