@@ -30,7 +30,7 @@ jobs:
       run: mv source/* flipperzero-firmware/applications_user
 
     - name: build applications
-      run: cd flipperzero-firmware && ./fbt fap_counter
+      run: cd flipperzero-firmware && ./fbt faps
     
 #     - name: move built applications
 #       run: mv 'flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap' './new_apps'
