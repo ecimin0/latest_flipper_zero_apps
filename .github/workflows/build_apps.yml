@@ -1,7 +1,7 @@
 name: build application
 
 on:
-  push:
+#   push:
 #     branches:
 #       - main
   workflow_dispatch: # on button click
