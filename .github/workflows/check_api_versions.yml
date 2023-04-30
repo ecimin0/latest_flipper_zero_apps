@@ -54,5 +54,5 @@ jobs:
           fi
 
       - name: no update
-        if: ${{ env.CURRENT > env.UPSTREAM }}
+        if: ${{ env.CURRENT >= env.UPSTREAM }}
         run: echo "no update required" && exit 1
