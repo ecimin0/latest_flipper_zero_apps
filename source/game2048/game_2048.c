@@ -96,14 +96,17 @@ typedef struct {
 
     bool debug;
 
+    FuriMutex* mutex;
 } GameState;
 
 #define XtoPx(x) (33 + x * 15)
 
 #define YtoPx(x) (1 + y * 15)
 
-static void game_2048_render_callback(Canvas* const canvas, ValueMutex* const vm) {
-    const GameState* game_state = acquire_mutex(vm, 25);
+static void game_2048_render_callback(Canvas* const canvas, void* vm) {
+    // const GameState* game_state = acquire_mutex(vm, 25);
+    const GameState* game_state = vm;
+    furi_mutex_acquire(game_state->mutex, FuriWaitForever);
     if(game_state == NULL) {
         return;
     }
@@ -139,7 +142,8 @@ static void game_2048_render_callback(Canvas* const canvas, ValueMutex* const vm
         // TODO: end animation event/callback/set AnimationIdle
     }
 
-    release_mutex(vm, game_state);
+    // release_mutex(vm, game_state);
+    furi_mutex_release(game_state->mutex);
 }
 
 static void
@@ -403,15 +407,17 @@ int32_t game_2048_app(void* p) {
 
     GameState* game_state = malloc(sizeof(GameState));
 
-    ValueMutex state_mutex;
-    if(!init_mutex(&state_mutex, game_state, sizeof(GameState))) {
+    // ValueMutex state_mutex;
+    // if(!init_mutex(&state_mutex, game_state, sizeof(GameState))) {
+    game_state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    if(!game_state->mutex) {
         return_code = 255;
         goto free_and_exit;
     }
 
     ViewPort* view_port = view_port_alloc();
     view_port_draw_callback_set(
-        view_port, (ViewPortDrawCallback)game_2048_render_callback, &state_mutex);
+        view_port, (ViewPortDrawCallback)game_2048_render_callback, game_state);
     view_port_input_callback_set(
         view_port, (ViewPortInputCallback)game_2048_input_callback, event_queue);
 
@@ -446,7 +452,8 @@ int32_t game_2048_app(void* p) {
     InputEvent event;
     for(bool loop = true; loop;) {
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 100);
-        GameState* game_state = (GameState*)acquire_mutex_block(&state_mutex);
+        // GameState* game_state = (GameState*)acquire_mutex_block(&state_mutex);
+        furi_mutex_acquire(game_state->mutex, FuriWaitForever);
 
         if(event_status == FuriStatusOk) {
             if(event.type == InputTypeShort) {
@@ -489,14 +496,16 @@ int32_t game_2048_app(void* p) {
         }
 
         view_port_update(view_port);
-        release_mutex(&state_mutex, game_state);
+        // release_mutex(&state_mutex, game_state);
+        furi_mutex_release(game_state->mutex);
     }
 
     view_port_enabled_set(view_port, false);
     gui_remove_view_port(gui, view_port);
     furi_record_close(RECORD_GUI);
     view_port_free(view_port);
-    delete_mutex(&state_mutex);
+    // delete_mutex(&state_mutex);
+    furi_mutex_free(game_state->mutex);
 
 free_and_exit:
     free(game_state);
