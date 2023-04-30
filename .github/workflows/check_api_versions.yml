@@ -55,5 +55,5 @@ jobs:
           git push
 
       - name: no update
-        if: ! steps.get_current.outputs.CURRENT < steps.get_upstream.outputs.UPSTREAM
+        if: steps.get_current.outputs.CURRENT >= steps.get_upstream.outputs.UPSTREAM
         run: exit 1
