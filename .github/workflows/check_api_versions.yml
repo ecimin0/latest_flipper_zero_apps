@@ -51,6 +51,7 @@ jobs:
             git add api_versions.csv
             git commit -m "update api_versions"
             git push
+          fi
 
       - name: no update
         if: ${{ env.CURRENT > env.UPSTREAM }}
