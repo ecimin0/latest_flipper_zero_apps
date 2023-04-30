@@ -39,7 +39,7 @@ jobs:
       - name: compare versions and push
 #         if: ${{ env.CURRENT < env.UPSTREAM }}
         run: |
-          if (( ${{env.CURRENT}} < ${{env.UPSTREAM}} )); then
+          if (( $CURRENT < $UPSTREAM )); then
             echo "newer API version detected"
             sed -i "1s@^@${FULL_UPSTREAM}\\n@" api_versions.csv
             git --no-pager diff
