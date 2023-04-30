@@ -39,6 +39,7 @@ jobs:
       - name: compare versions and push
 #         if: ${{ env.CURRENT < env.UPSTREAM }}
         run: |
+          echo ${CURRENT} && echo ${UPSTREAM}
           if (( $CURRENT < $UPSTREAM )); then
             echo "newer API version detected"
             sed -i "1s@^@${FULL_UPSTREAM}\\n@" api_versions.csv
@@ -49,7 +50,7 @@ jobs:
             git commit -m "update api_versions"
             git push
           else
-            exit(1)
+            exit 1
           fi
 #       - name: no update
 #         if: ${{ env.CURRENT >= env.UPSTREAM }}
