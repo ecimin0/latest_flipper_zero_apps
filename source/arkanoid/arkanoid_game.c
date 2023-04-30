@@ -53,6 +53,7 @@ typedef struct {
     int tick; //Tick counter
     bool gameStarted; // Did the game start?
     int speed; // Ball speed
+    FuriMutex* mutex;
 } ArkanoidState;
 
 typedef struct {
@@ -308,7 +309,11 @@ static void arkanoid_state_init(ArkanoidState* arkanoid_state) {
 }
 
 static void arkanoid_draw_callback(Canvas* const canvas, void* ctx) {
-    ArkanoidState* arkanoid_state = acquire_mutex((ValueMutex*)ctx, 25);
+    // ArkanoidState* arkanoid_state = acquire_mutex((ValueMutex*)ctx, 25);
+
+    ArkanoidState* arkanoid_state = ctx;
+    furi_mutex_acquire(arkanoid_state->mutex, FuriWaitForever);
+
     if(arkanoid_state == NULL) {
         return;
     }
@@ -350,7 +355,8 @@ static void arkanoid_draw_callback(Canvas* const canvas, void* ctx) {
         arkanoid_state->score = 0;
     }
 
-    release_mutex((ValueMutex*)ctx, arkanoid_state);
+    // release_mutex((ValueMutex*)ctx, arkanoid_state);
+    furi_mutex_release(arkanoid_state->mutex);
 }
 
 static void arkanoid_input_callback(InputEvent* input_event, FuriMessageQueue* event_queue) {
@@ -376,8 +382,10 @@ int32_t arkanoid_game_app(void* p) {
     ArkanoidState* arkanoid_state = malloc(sizeof(ArkanoidState));
     arkanoid_state_init(arkanoid_state);
 
-    ValueMutex state_mutex;
-    if(!init_mutex(&state_mutex, arkanoid_state, sizeof(ArkanoidState))) {
+    // ValueMutex state_mutex;
+    // if(!init_mutex(&state_mutex, arkanoid_state, sizeof(ArkanoidState))) {
+    arkanoid_state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    if(!arkanoid_state->mutex) {
         FURI_LOG_E(TAG, "Cannot create mutex\r\n");
         return_code = 255;
         goto free_and_exit;
@@ -385,7 +393,7 @@ int32_t arkanoid_game_app(void* p) {
 
     // Set system callbacks
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, arkanoid_draw_callback, &state_mutex);
+    view_port_draw_callback_set(view_port, arkanoid_draw_callback, arkanoid_state);
     view_port_input_callback_set(view_port, arkanoid_input_callback, event_queue);
 
     FuriTimer* timer =
@@ -399,7 +407,8 @@ int32_t arkanoid_game_app(void* p) {
     GameEvent event;
     for(bool processing = true; processing;) {
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 100);
-        ArkanoidState* arkanoid_state = (ArkanoidState*)acquire_mutex_block(&state_mutex);
+        // ArkanoidState* arkanoid_state = (ArkanoidState*)acquire_mutex_block(&state_mutex);
+        furi_mutex_acquire(arkanoid_state->mutex, FuriWaitForever);
 
         if(event_status == FuriStatusOk) {
             // Key events
@@ -456,7 +465,8 @@ int32_t arkanoid_game_app(void* p) {
         }
 
         view_port_update(view_port);
-        release_mutex(&state_mutex, arkanoid_state);
+        // release_mutex(&state_mutex, arkanoid_state);
+        furi_mutex_release(arkanoid_state->mutex);
     }
     furi_timer_free(timer);
     view_port_enabled_set(view_port, false);
@@ -464,7 +474,8 @@ int32_t arkanoid_game_app(void* p) {
     furi_record_close(RECORD_GUI);
     furi_record_close(RECORD_NOTIFICATION);
     view_port_free(view_port);
-    delete_mutex(&state_mutex);
+    // delete_mutex(&state_mutex);
+    furi_mutex_free(arkanoid_state->mutex);
 
 free_and_exit:
     free(arkanoid_state);
