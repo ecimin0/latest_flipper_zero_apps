@@ -23,22 +23,22 @@ jobs:
         run: |
           echo "CURRENT=$(sed -n '1p' api_versions.csv | awk -F ',' '{print $3}')" >> "$GITHUB_ENV"
 
-#       - name: checkout upstream repo
-#         uses: actions/checkout@v3
-#         with:
-#           repository: flipperdevices/flipperzero-firmware
-#           path: './flipperzero-firmware'
-# #           ref: ${{ matrix.firmware_branch }}
+      - name: checkout upstream repo
+        uses: actions/checkout@v3
+        with:
+          repository: flipperdevices/flipperzero-firmware
+          path: './flipperzero-firmware'
+#           ref: ${{ matrix.firmware_branch }}
       
-#       - name: get upstream API version
-#         id: get_upstream
-#         run: |
-#           echo "UPSTREAM=$(sed -n '2p' flipperzero-firmware/firmware/targets/f7/api_symbols.csv | awk -F ',' '{print $3}')" >> $GITHUB_ENV
-#           echo "FULL_UPSTREAM=$(sed -n '2p' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
+      - name: get upstream API version
+        id: get_upstream
+        run: |
+          echo "UPSTREAM=$(sed -n '2p' flipperzero-firmware/firmware/targets/f7/api_symbols.csv | awk -F ',' '{print $3}')" >> $GITHUB_ENV
+          echo "FULL_UPSTREAM=$(sed -n '2p' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
 
       - name: compare versions and push
-#         if: ${{ env.CURRENT -lt env.UPSTREAM }}
-        run: echo "${{ env.CURRENT }}"
+        if: ${{ env.CURRENT < env.UPSTREAM }}
+        run: echo "${{ env.CURRENT }}" && echo "less than"
 
 
 
