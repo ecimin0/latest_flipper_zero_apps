@@ -40,7 +40,7 @@ jobs:
           echo $UPSTREAM
 
       - name: compare versions and push
-        if: ${{ env.CURRENT + 0  < env.UPSTREAM + 0 }}
+        if: ${{ env.CURRENT < env.UPSTREAM }}
         run: |
           FULL_UPSTREAM=$(sed -n '2p' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)
           echo $FULL_UPSTREAM >> GITHUB_ENV
@@ -55,5 +55,5 @@ jobs:
           git push
 
       - name: no update
-        if: env.CURRENT >= env.UPSTREAM
+        if: ${{ env.CURRENT >= env.UPSTREAM }}
         run: exit 1
