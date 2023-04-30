@@ -35,7 +35,7 @@ jobs:
         id: get_upstream
         run: |
           echo "UPSTREAM=$(sed -n '2p' flipperzero-firmware/firmware/targets/f7/api_symbols.csv | awk -F ',' '{print $3}')" >> GITHUB_ENV
-          echo "$UPSTREAM
+          echo $UPSTREAM
 
       - name: compare versions and push
         if: ${{ env.CURRENT < env.UPSTREAM }}
