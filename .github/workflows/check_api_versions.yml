@@ -40,7 +40,7 @@ jobs:
 
       - name: compare versions and push
 #         if: ${{ env.CURRENT -lt env.UPSTREAM }}
-        run: env
+        run: echo ${{ steps.outputs.CURRENT }}
 
 
 
