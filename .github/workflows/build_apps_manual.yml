@@ -1,4 +1,4 @@
-name: build application
+name: build application manually
 
 on:
   workflow_dispatch: # on button click
@@ -10,7 +10,7 @@ jobs:
       matrix:
         firmware_branch: [dev, release-candidate, release]
 
-    name: build application with manual dispatch
+    name: build application manually
     runs-on: ubuntu-latest
     steps:
       - name: checkout this repo
