@@ -37,10 +37,10 @@ jobs:
           echo "FULL_UPSTREAM=$(sed -n '2p' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> GITHUB_ENV
 
       - name: compare versions and push
-#         if: ${{ env.CURRENT < env.UPSTREAM }}
+#         if: ${{ env.CURRENT -lt env.UPSTREAM }}
         run: |
           echo ${CURRENT} && echo ${UPSTREAM}
-          if (( $CURRENT < $UPSTREAM )); then
+          if [[ $CURRENT < $UPSTREAM ]]; then
             echo "newer API version detected"
             sed -i "1s@^@${FULL_UPSTREAM}\\n@" api_versions.csv
             git --no-pager diff
@@ -53,5 +53,5 @@ jobs:
             exit 1
           fi
 #       - name: no update
-#         if: ${{ env.CURRENT >= env.UPSTREAM }}
+#         if: ${{ env.CURRENT -ge env.UPSTREAM }}
 #         run: exit 1
