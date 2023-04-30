@@ -1,7 +1,7 @@
 on:
   push:
-    branches:
-      - main
+#     branches:
+#       - main
   workflow_call: # get called by another action
   workflow_dispatch: # on button click
 
