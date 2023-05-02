@@ -44,9 +44,9 @@ jobs:
         if: ${{ steps.dl_artifact.conclusion != 'skipped' }}
         run: |
           ls && pwd
-          mv source/* flipperzero-firmware/applications_user
+          cp -r source/* flipperzero-firmware/applications_user
           cd flipperzero-firmware && ./fbt fap_counter
-          mv ./build/f7-firmware-D/.extapps/*.fap ../
+          cp ./build/f7-firmware-D/.extapps/*.fap ../
 
       - name: commit and push
         if: ${{ steps.build.conclusion != 'skipped' }}
