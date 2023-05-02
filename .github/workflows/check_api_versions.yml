@@ -55,3 +55,14 @@ jobs:
           git add api_versions.yaml
           git commit -m "update api_versions"
           git push
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3.1.2
+        if: ${{ steps.update_version.conclusion != 'skipped' }}
+        with:
+          name: api_versions
+          path: api_versions.yml
+          retention-days: 1
+
+  build:
+    uses: ./.github/workflows/build_apps.yml
