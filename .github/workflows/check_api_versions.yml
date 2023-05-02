@@ -47,8 +47,3 @@ jobs:
 #       - name: no update
 #         if: ${{ env.CURRENT >= env.UPSTREAM }}
 #         run: echo "no update required" && exit 1
-
-  call_build_workflow:
-    if: ${{ jobs.check_api_version.result != 'skipped' }}
-    uses: ./.github/workflows/build_apps.yml
-      
