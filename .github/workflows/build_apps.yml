@@ -45,6 +45,7 @@ jobs:
         run: |
           mv source/* flipperzero-firmware/applications_user
           cd flipperzero-firmware && ./fbt fap_counter
+          mv ./f7-firmware-D/.extapps/*.fap ../
 
       - name: commit and push
         if: ${{ steps.build.conclusion != 'skipped' }}
@@ -53,7 +54,7 @@ jobs:
           git --no-pager diff
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
+          git add *.fap
           git commit -m "built flipper apps via build_apps workflow"
           git push
 
