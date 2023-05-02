@@ -44,8 +44,10 @@ jobs:
           propertyPath: 'versions.${{ matrix.firmware_branch }}'
           value: ${{ env.UPSTREAM }}
           commitChange: false
+          method: update
 
       - name: push api_versions.yaml changes
+        if: ${{ steps.update_version.conclusion != 'skipped' }}
         run: |
           git --no-pager diff
           git config user.name github-actions
