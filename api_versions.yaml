@@ -1,4 +1,4 @@
 versions:
-  dev:
-  release:
-  release-candidate:
+  dev: null
+  release: '23.0'
+  release-candidate: null
