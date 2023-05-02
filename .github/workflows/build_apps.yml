@@ -9,6 +9,7 @@ on:
     workflows: ["check for newer api version"]
     types:
       - completed
+  workflow_call: # callable from another workflow
 
 jobs:
   build_apps:
