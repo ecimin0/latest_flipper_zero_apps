@@ -5,10 +5,10 @@ on:
 #     branches:
 #       - main
   workflow_dispatch: # on button click
-  workflow_run:
-    workflows: ["check for newer api version"]
-    types:
-      - completed
+#   workflow_run:
+#     workflows: ["check for newer api version"]
+#     types:
+#       - completed
   workflow_call: # callable from another workflow
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
 
     name: build application
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+#     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: checkout this repo
         uses: actions/checkout@v3
