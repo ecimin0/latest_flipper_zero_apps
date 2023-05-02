@@ -56,12 +56,12 @@ jobs:
           git commit -m "update api_versions"
           git push
 
-      - name: Upload a Build Artifact
+      - name: create yaml file artifact
         uses: actions/upload-artifact@v3.1.2
         if: ${{ steps.update_version.conclusion != 'skipped' }}
         with:
           name: api_versions
-          path: api_versions.yml
+          path: api_versions.yaml
           retention-days: 1
 
   build:
