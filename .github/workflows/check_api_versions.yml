@@ -42,10 +42,10 @@ jobs:
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: 'api_versions.yaml'
-          propertyPath: $['versions.${{ matrix.firmware_branch }}']
+          propertyPath: .['versions.${{ matrix.firmware_branch }}']
           value: ${{ env.UPSTREAM }}
           commitChange: false
-          method: update
+          method: Update
 
       - name: push api_versions.yaml changes
         if: ${{ steps.update_version.conclusion != 'skipped' }}
