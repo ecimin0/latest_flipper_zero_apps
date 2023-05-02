@@ -34,7 +34,6 @@ jobs:
         id: get_upstream
         run: |
           echo "UPSTREAM=$(awk -F ',' 'NR==2{print $3}' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
-          echo "FULL_UPSTREAM=$(awk 'NR==2{print}' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
 
       - name: update api_versions.yaml
         id: update_version
