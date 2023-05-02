@@ -1,15 +1,10 @@
-name: build application
+name: build FAPs
 
 on:
-#   push:
-#     branches:
-#       - main
+  push:
+    branches:
+      - main
   workflow_dispatch: # on button click
-#   workflow_run:
-#     workflows: ["check for newer api version"]
-#     types:
-#       - completed
-  workflow_call: # callable from another workflow
 
 jobs:
   build_apps:
@@ -20,8 +15,6 @@ jobs:
 
     name: build application
     runs-on: ubuntu-latest
-#     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    if: ${{ github.jobs.check_api_version.result == 'success' }}
     steps:
       - name: checkout this repo
         uses: actions/checkout@v3
@@ -34,11 +27,10 @@ jobs:
           submodules: true
           ref: ${{ matrix.firmware_branch }}
 
-      - name: move source code
-        run: mv source/* flipperzero-firmware/applications_user
-
       - name: build
-        run: cd flipperzero-firmware && ./fbt faps
+        run: |
+          mv source/* flipperzero-firmware/applications_user
+          cd flipperzero-firmware && ./fbt faps
 
       - name: commit and push
         run: |
@@ -47,3 +39,4 @@ jobs:
           git add flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
           git commit -m "built flipper apps via build_apps workflow"
           git push
+
