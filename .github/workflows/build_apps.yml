@@ -43,9 +43,10 @@ jobs:
         continue-on-error: true
         if: ${{ steps.dl_artifact.conclusion != 'skipped' }}
         run: |
+          ls && pwd
           mv source/* flipperzero-firmware/applications_user
           cd flipperzero-firmware && ./fbt fap_counter
-          mv ./f7-firmware-D/.extapps/*.fap ../
+          mv ./build/f7-firmware-D/.extapps/*.fap ../
 
       - name: commit and push
         if: ${{ steps.build.conclusion != 'skipped' }}
