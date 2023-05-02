@@ -1,4 +1,4 @@
-name: compare and build
+name: compare api versions
 
 on:
   schedule:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch: # on button click
 
 jobs:
-  compare_and_build:
-    name: compare and build
+  compare_api_versions:
+    name: compare api versions
     strategy:
       matrix:
         firmware_branch: [dev, release-candidate, release]
@@ -66,4 +66,4 @@ jobs:
 
   build:
     uses: ./.github/workflows/build_apps.yml
-    needs: compare_and_build
+    needs: compare_api_versions
