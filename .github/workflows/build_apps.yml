@@ -44,7 +44,7 @@ jobs:
         if: ${{ steps.dl_artifact.conclusion != 'skipped' }}
         run: |
           mv source/* flipperzero-firmware/applications_user
-          cd flipperzero-firmware && ./fbt faps
+          cd flipperzero-firmware && ./fbt fap_counter
 
       - name: commit and push
         if: ${{ steps.build.conclusion != 'skipped' }}
