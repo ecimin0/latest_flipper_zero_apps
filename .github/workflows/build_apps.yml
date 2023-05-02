@@ -5,6 +5,7 @@ on:
     branches:
       - main
   workflow_dispatch: # on button click
+  workflow_call:
 
 jobs:
   build_apps:
