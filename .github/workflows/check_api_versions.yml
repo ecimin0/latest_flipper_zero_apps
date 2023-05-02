@@ -16,7 +16,7 @@ jobs:
       - name: get current version
         id: get_current
         run: |
-          echo "CURRENT=$(awk -F ',' 'NR==1{print $3}' api_symbols.csv)" >> "$GITHUB_ENV"
+          echo "CURRENT=$(awk -F ',' 'NR==1{print $3}' api_versions.csv)" >> "$GITHUB_ENV"
 
       - name: checkout upstream repo
         uses: actions/checkout@v3
@@ -27,7 +27,7 @@ jobs:
       - name: get upstream API version
         id: get_upstream
         run: |
-          echo "UPSTREAM=$(awk -F ',' 'NR==1{print $3}' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
+          echo "UPSTREAM=$(awk -F ',' 'NR==2{print $3}' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
           echo "FULL_UPSTREAM=$(awk 'NR==2{print}' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
 
       - name: compare versions and push
