@@ -42,9 +42,12 @@ jobs:
         id: build
         if: ${{ steps.dl_artifact.outcome != 'failure' }}
         run: |
+          ls
           cp -r source/* flipperzero-firmware/applications_user
           cd flipperzero-firmware && ./fbt fap_counter
-          cp ./build/f7-firmware-D/.extapps/*.fap ../
+          ls ../
+          pwd
+          cp --verbose ./build/f7-firmware-D/.extapps/*.fap ../
 
       - name: commit and push
         if: ${{ steps.dl_artifact.outcome != 'failure' }}
