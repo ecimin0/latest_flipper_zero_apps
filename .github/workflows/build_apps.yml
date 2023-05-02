@@ -49,6 +49,8 @@ jobs:
       - name: commit and push
         if: ${{ steps.build.conclusion != 'skipped' }}
         run: |
+          pwd
+          git --no-pager diff
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
