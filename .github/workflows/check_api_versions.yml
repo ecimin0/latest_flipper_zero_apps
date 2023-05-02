@@ -19,7 +19,8 @@ jobs:
       - name: get current version
         id: get_current
         run: |
-          echo "CURRENT=$(awk -F ',' 'NR==1{print $3}' api_versions.csv)" >> "$GITHUB_ENV"
+          echo "CURRENT=$(yq -r '.versions.${{ matrix.firmware_branch }}' api_versions.yaml)" >> "$GITHUB_ENV"
+          
 
       - name: checkout upstream repo
         uses: actions/checkout@v3
@@ -37,7 +38,7 @@ jobs:
 
       - name: update api_versions.yaml
         id: update_version
-#         if: ${{ env.CURRENT < env.UPSTREAM }}
+        if: ${{ env.CURRENT < env.UPSTREAM }}
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: 'api_versions.yaml'
