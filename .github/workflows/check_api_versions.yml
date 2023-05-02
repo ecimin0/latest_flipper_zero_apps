@@ -1,14 +1,13 @@
-name: check for newer api version
+name: compare and build
 
 on:
   schedule:
     - cron: '49 * * * *'
   workflow_dispatch: # on button click
-  workflow_call:
 
 jobs:
-  check_api_version:
-    name: check for newer api version
+  compare_and_build:
+    name: compare and build
     strategy:
       matrix:
         firmware_branch: [dev, release-candidate, release]
@@ -36,61 +35,43 @@ jobs:
           echo "UPSTREAM=$(awk -F ',' 'NR==2{print $3}' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
           echo "FULL_UPSTREAM=$(awk 'NR==2{print}' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
 
-      - name: compare versions and push
-        id: compare_versions
+      - name: update api_versions.yaml
+        id: update_version
         if: ${{ env.CURRENT < env.UPSTREAM }}
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'api_versions.yaml'
+          propertyPath: 'file.versions.${{ matrix.firmware_branch }}'
+          value: ${{ env.UPSTREAM }}
+          commitChange: false
+
+      - name: push api_versions.yaml changes
         run: |
-          echo "newer API version detected upstream"
-          sed -i "1s@^@${FULL_UPSTREAM}\\n@" api_versions.csv
           git --no-pager diff
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add api_versions.csv
+          git add api_versions.yaml
           git commit -m "update api_versions"
           git push
 
-#   build_apps:
-#     needs: "check_api_version"
-#     #     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-#     if: ${{ check_api_version.result == 'success' }}
-# #     if: ${{ steps.compare_versions.conclusion != 'skipped' }}
-# #     if: ${{  }}
-#     strategy:
-#       matrix:
-#         firmware_branch: [dev, release-candidate, release]
-
-#     name: build application
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: checkout this repo
-#         uses: actions/checkout@v3
-
-#       - name: checkout flipper zero firmware repo
-#         uses: actions/checkout@v3
-#         with:
-#           repository: flipperdevices/flipperzero-firmware
-#           path: './flipperzero-firmware'
-#           submodules: true
-#           ref: ${{ matrix.firmware_branch }}
-
-      - name: move source code
-        if: ${{ steps.compare_versions.conclusion != 'skipped' }}
-        run: mv source/* flipperzero-firmware/applications_user
+# echo "newer API version detected upstream"
+#           sed -i "1s@^@${FULL_UPSTREAM}\\n@" api_versions.csv
 
       - name: build
-        run: cd flipperzero-firmware && ./fbt faps
-
-      - name: commit and push
+        if: ${{ steps.update_version.conclusion != 'skipped' }}
         run: |
+          mv source/* flipperzero-firmware/applications_user
+          cd flipperzero-firmware && ./fbt faps
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
-          git commit -m "built flipper apps via build_apps workflow"
+          git commit -m "built flipper apps via workflow"
           git push
 
-
-    
-
-#       - name: no update
-#         if: ${{ env.CURRENT >= env.UPSTREAM }}
-#         run: echo "no update required" && exit 1
+#       - name: commit and push
+#         run: |
+#           git config user.name github-actions
+#           git config user.email github-actions@github.com
+#           git add flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
+#           git commit -m "built flipper apps via build_apps workflow"
+#           git push
