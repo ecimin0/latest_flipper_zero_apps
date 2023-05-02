@@ -8,10 +8,6 @@ on:
 jobs:
   check_api_version:
 
-#     strategy:
-#       matrix:
-#         firmware_branch: [dev, release-candidate, release]
-
     name: check for newer api version
     runs-on: ubuntu-latest
     steps:
@@ -28,7 +24,6 @@ jobs:
         with:
           repository: flipperdevices/flipperzero-firmware
           path: './flipperzero-firmware'
-#           ref: ${{ matrix.firmware_branch }}
       
       - name: get upstream API version
         id: get_upstream
@@ -38,21 +33,22 @@ jobs:
 
       - name: compare versions and push
         if: ${{ env.CURRENT < env.UPSTREAM }}
-#         run: echo "${{ env.CURRENT }}" && echo "less than"
 
         run: |
-          echo ${CURRENT} && echo ${UPSTREAM}
-          if [[ $CURRENT < $UPSTREAM ]]; then
-            echo "newer API version detected"
-            sed -i "1s@^@${FULL_UPSTREAM}\\n@" api_versions.csv
-            git --no-pager diff
-            git config user.name github-actions
-            git config user.email github-actions@github.com
-            git add api_versions.csv
-            git commit -m "update api_versions"
-            git push
-          fi
+          echo "newer API version detected upstream"
+          sed -i "1s@^@${FULL_UPSTREAM}\\n@" api_versions.csv
+          git --no-pager diff
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add api_versions.csv
+          git commit -m "update api_versions"
+          git push
 
-      - name: no update
-        if: ${{ env.CURRENT >= env.UPSTREAM }}
-        run: echo "no update required" && exit 1
+#       - name: no update
+#         if: ${{ env.CURRENT >= env.UPSTREAM }}
+#         run: echo "no update required" && exit 1
+
+  call_build_workflow:
+    if: ${{ jobs.check_for_newer_api_version.result != 'skipped' }}
+    uses: ./.github/workflows/build_apps.yml
+      
