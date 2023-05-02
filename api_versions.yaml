@@ -1,7 +1,4 @@
 versions:
-  dev: null
-  release: null
-  release-candidate: null
-file:
-  versions:
-    release: '23.0'
+  dev:
+  release:
+  release-candidate:
