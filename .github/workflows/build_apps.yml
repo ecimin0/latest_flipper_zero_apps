@@ -19,11 +19,11 @@ jobs:
     steps:
       - name: Download a Build Artifact
         id: dl_artifact
-        uses: actions/download-artifact@v2.1.1
+        uses: actions/download-artifact@v3.0.2
         continue-on-error: true
         with:
           name: api_versions
-          path: t
+          path: api_versions.yaml
 
       - name: checkout this repo
         uses: actions/checkout@v3
