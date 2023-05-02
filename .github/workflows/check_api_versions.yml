@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: '49 * * * *'
   workflow_dispatch: # on button click
+  workflow_call:
 
 jobs:
   check_api_version:
@@ -44,16 +45,17 @@ jobs:
           git push
 
   build_apps:
-
+    needs: "check_api_version"
+    #     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ jobs.check_api_version.result == 'success' }}
+#     if: ${{ steps.compare_versions.conclusion != 'skipped' }}
+#     if: ${{  }}
     strategy:
       matrix:
         firmware_branch: [dev, release-candidate, release]
 
     name: build application
     runs-on: ubuntu-latest
-#     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    if: ${{ jobs.check_api_version.result == 'success' }}
-#     if: ${{ steps.compare_versions.conclusion != 'skipped' }}
     steps:
       - name: checkout this repo
         uses: actions/checkout@v3
