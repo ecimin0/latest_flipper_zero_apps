@@ -21,7 +21,7 @@ jobs:
     name: build application
     runs-on: ubuntu-latest
 #     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    if: ${{ github.jobs.check_api_version.result == 'failure' }}
+    if: ${{ github.jobs.check_api_version.result == 'success' }}
     steps:
       - name: checkout this repo
         uses: actions/checkout@v3
