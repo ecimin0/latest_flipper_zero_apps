@@ -27,7 +27,7 @@ jobs:
 
       - name: checkout this repo
         uses: actions/checkout@v3
-        if: ${{ steps.dl_artifact.conclusion != 'skipped' }}
+        if: ${{ steps.dl_artifact.outcome != 'failure' }}
 
       - name: checkout flipper zero firmware repo
         uses: actions/checkout@v3
