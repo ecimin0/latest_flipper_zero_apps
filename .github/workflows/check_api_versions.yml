@@ -43,7 +43,6 @@ jobs:
           git push
 
   build_apps:
-    if: ${{ jobs.check_api_version.result != 'skipped' }}
     uses: ./.github/workflows/build_apps.yml
 
     
