@@ -46,15 +46,15 @@ jobs:
           commitChange: false
           method: Update
 
-      - name: push api_versions.yaml changes
-        if: ${{ steps.update_version.conclusion != 'skipped' }}
-        run: |
-          git --no-pager diff
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add api_versions.yaml
-          git commit -m "update api_versions"
-          git push
+#       - name: push api_versions.yaml changes
+#         if: ${{ steps.update_version.conclusion != 'skipped' }}
+#         run: |
+#           git --no-pager diff
+#           git config user.name github-actions
+#           git config user.email github-actions@github.com
+#           git add api_versions.yaml
+#           git commit -m "update api_versions"
+#           git push
 
       - name: create yaml file artifact
         uses: actions/upload-artifact@v3.1.2
