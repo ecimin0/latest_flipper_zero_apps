@@ -7,7 +7,6 @@ on:
 
 jobs:
   check_api_version:
-
     name: check for newer api version
     runs-on: ubuntu-latest
     steps:
@@ -33,7 +32,6 @@ jobs:
 
       - name: compare versions and push
         if: ${{ env.CURRENT < env.UPSTREAM }}
-
         run: |
           echo "newer API version detected upstream"
           sed -i "1s@^@${FULL_UPSTREAM}\\n@" api_versions.csv
@@ -43,6 +41,12 @@ jobs:
           git add api_versions.csv
           git commit -m "update api_versions"
           git push
+
+  build_apps:
+    if: ${{ jobs.check_api_version.result != 'skipped' }}
+    uses: ./.github/workflows/build_apps.yml
+
+    
 
 #       - name: no update
 #         if: ${{ env.CURRENT >= env.UPSTREAM }}
