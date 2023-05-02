@@ -55,25 +55,3 @@ jobs:
           git add api_versions.yaml
           git commit -m "update api_versions"
           git push
-
-# echo "newer API version detected upstream"
-#           sed -i "1s@^@${FULL_UPSTREAM}\\n@" api_versions.csv
-
-      - name: build
-        if: ${{ steps.update_version.conclusion != 'skipped' }}
-        run: |
-          mv source/* flipperzero-firmware/applications_user
-          cd flipperzero-firmware && ./fbt faps
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
-          git commit -m "built flipper apps via workflow"
-          git push
-
-#       - name: commit and push
-#         run: |
-#           git config user.name github-actions
-#           git config user.email github-actions@github.com
-#           git add flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
-#           git commit -m "built flipper apps via build_apps workflow"
-#           git push
