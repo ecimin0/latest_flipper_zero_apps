@@ -66,3 +66,4 @@ jobs:
 
   build:
     uses: ./.github/workflows/build_apps.yml
+    needs: compare_and_build
