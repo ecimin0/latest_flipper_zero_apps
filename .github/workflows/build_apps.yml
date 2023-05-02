@@ -17,6 +17,12 @@ jobs:
     name: build application
     runs-on: ubuntu-latest
     steps:
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v2.1.1
+        with:
+          name: api_versions
+          path: t
+
       - name: checkout this repo
         uses: actions/checkout@v3
 
