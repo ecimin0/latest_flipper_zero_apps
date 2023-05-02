@@ -43,7 +43,6 @@ jobs:
         continue-on-error: true
         if: ${{ steps.dl_artifact.conclusion != 'skipped' }}
         run: |
-          ls && pwd
           cp -r source/* flipperzero-firmware/applications_user
           cd flipperzero-firmware && ./fbt fap_counter
           cp ./build/f7-firmware-D/.extapps/*.fap ../
@@ -51,11 +50,10 @@ jobs:
       - name: commit and push
         if: ${{ steps.build.conclusion != 'skipped' }}
         run: |
-          pwd
           git --no-pager diff
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add *.fap
+          git add *.fap api_versions.yaml
           git commit -m "built flipper apps via build_apps workflow"
           git push
 
