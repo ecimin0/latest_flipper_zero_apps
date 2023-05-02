@@ -41,7 +41,7 @@ jobs:
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: 'api_versions.yaml'
-          propertyPath: 'file.versions.${{ matrix.firmware_branch }}'
+          propertyPath: 'versions.${{ matrix.firmware_branch }}'
           value: ${{ env.UPSTREAM }}
           commitChange: false
 
