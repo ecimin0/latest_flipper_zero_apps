@@ -17,7 +17,7 @@ jobs:
     name: build application
     runs-on: ubuntu-latest
     steps:
-      - name: Download a Build Artifact
+      - name: download yaml artifact
         id: dl_artifact
         uses: actions/download-artifact@v3.0.2
         continue-on-error: true
@@ -42,12 +42,9 @@ jobs:
         id: build
         if: ${{ steps.dl_artifact.outcome != 'failure' }}
         run: |
-          ls
           cp -r source/* flipperzero-firmware/applications_user
           cd flipperzero-firmware && ./fbt fap_counter
-          ls ../
-          pwd
-          cp --verbose ./build/f7-firmware-D/.extapps/*.fap ../
+          cp ./build/f7-firmware-D/.extapps/*.fap ../applications/${{ matrix.firmware_branch }}/
 
       - name: commit and push
         if: ${{ steps.dl_artifact.outcome != 'failure' }}
@@ -57,6 +54,6 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add *.fap api_versions.yaml
-          git commit -m "built flipper apps via build_apps workflow"
+          git commit -m "built app via build_apps workflow"
           git push
 
