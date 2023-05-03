@@ -17,6 +17,9 @@ jobs:
     name: build application
     runs-on: ubuntu-latest
     steps:
+      - name: checkout this repo
+        uses: actions/checkout@v3
+
       - name: download yaml artifact
         id: dl_artifact
         uses: actions/download-artifact@v3.0.2
@@ -24,10 +27,6 @@ jobs:
         with:
           name: api_versions
           path: api_versions.yaml
-
-      - name: checkout this repo
-        uses: actions/checkout@v3
-        if: ${{ steps.dl_artifact.outcome != 'failure' }}
 
       - name: checkout flipper zero firmware repo
         uses: actions/checkout@v3
