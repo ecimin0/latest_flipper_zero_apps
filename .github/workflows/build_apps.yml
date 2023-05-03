@@ -44,7 +44,7 @@ jobs:
         run: |
           cp -r source/* flipperzero-firmware/applications_user/
           cd flipperzero-firmware && ./fbt fap_counter
-          cp --verbose ./build/f7-firmware-D/.extapps/*.fap ../apps/${{ matrix.firmware_branch }}/
+          cp ./build/f7-firmware-D/.extapps/*.fap ../apps/${{ matrix.firmware_branch }}/
 
       - name: commit and push
         if: ${{ steps.dl_artifact.outcome != 'failure' }}
@@ -53,7 +53,7 @@ jobs:
           git --no-pager diff
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add apps/* api_versions.yaml
+          git add apps/${{ matrix.firmware_branch }}/* api_versions.yaml
           git commit -m "built app via build_apps workflow"
           git push
 
