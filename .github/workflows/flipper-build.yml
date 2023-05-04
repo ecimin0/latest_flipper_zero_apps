@@ -26,7 +26,7 @@ jobs:
         id: build-app
         with:
           sdk-channel: ${{ matrix.channel }}
-#           sdk-index-url: ${{ matrix.sdk-index-url }}
+          sdk-index-url: ${{ matrix.sdk-index-url }}
       - name: upload app artifacts
         uses: actions/upload-artifact@v3
         with:
