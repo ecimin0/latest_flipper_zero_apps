@@ -38,7 +38,7 @@ jobs:
         with:
           repository: flipperdevices/flipperzero-firmware
           path: './flipperzero-firmware'
-          ref: ${{ matrix.firmware_branch }}
+          ref: ${{ matrix.name }}
           submodules: true
       
       - name: get upstream API version
@@ -52,7 +52,7 @@ jobs:
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: 'api_versions.yaml'
-          propertyPath: versions['${{ matrix.firmware_branch }}']
+          propertyPath: versions['${{ matrix.name }}']
           value: ${{ env.UPSTREAM }}
           commitChange: false
           method: Update
