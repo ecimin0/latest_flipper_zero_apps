@@ -1,4 +1,4 @@
 versions:
   dev: '13.0'
-  release: '23.0'
-  rc: '23.0'
+  release: '13.0'
+  rc: '13.0'
