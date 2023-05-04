@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        channel: [dev, release-candidate, release]
+        channel: [dev, rc, release]
 #       matrix:
 #         include:
 #           - name: dev channel
