@@ -75,7 +75,9 @@ jobs:
         with:
           sdk-channel: ${{ matrix.sdk-channel }}
           app-dir: "./source/dolphin-counter-main"
+
       - name: upload app artifacts
+        if: ${{ steps.build-app.conclusion != 'skipped' }}
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
