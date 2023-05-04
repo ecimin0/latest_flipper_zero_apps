@@ -1,4 +1,4 @@
-name: FAP: Compare API Versions
+name: "FAP: Compare API Versions"
 
 on:
   schedule:
