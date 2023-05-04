@@ -10,7 +10,19 @@ jobs:
     name: compare api versions
     strategy:
       matrix:
-        firmware_branch: [dev, rc, release]
+#         firmware_branch: [dev, rc, release]
+        include:
+          - name: dev
+            sdk-channel: dev
+          - name: release
+            sdk-channel: release
+          - name: release-candidate
+            sdk-channel: rc
+#           - name: Unofficial firmware
+#             # example URL, replace with a valid one
+#             # you can also use other modes for specifying SDK sources
+#             sdk-index-url: https://flipper.example.com/directory.json
+#             sdk-channel: dev
     runs-on: ubuntu-latest
     steps:
       - name: checkout this repo
@@ -60,7 +72,7 @@ jobs:
         uses: flipperdevices/flipperzero-ufbt-action@v0.1.1
         id: build-app
         with:
-          sdk-channel: ${{ matrix.channel }}
+          sdk-channel: ${{ matrix.sdk-channel }}
           app-dir: "./source/dolphin-counter-main"
       - name: upload app artifacts
         uses: actions/upload-artifact@v3
