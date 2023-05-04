@@ -10,7 +10,7 @@ jobs:
     name: compare api versions
     strategy:
       matrix:
-        firmware_branch: [dev, release-candidate, release]
+        firmware_branch: [dev, rc, release]
     runs-on: ubuntu-latest
     steps:
       - name: checkout this repo
@@ -21,7 +21,6 @@ jobs:
         run: |
           echo "CURRENT=$(yq -r '.versions.${{ matrix.firmware_branch }}' api_versions.yaml)" >> "$GITHUB_ENV"
           
-
       - name: checkout upstream repo
         uses: actions/checkout@v3
         with:
@@ -46,24 +45,37 @@ jobs:
           commitChange: false
           method: Update
 
-#       - name: push api_versions.yaml changes
-#         if: ${{ steps.update_version.conclusion != 'skipped' }}
-#         run: |
-#           git --no-pager diff
-#           git config user.name github-actions
-#           git config user.email github-actions@github.com
-#           git add api_versions.yaml
-#           git commit -m "update api_versions"
-#           git push
-
-      - name: create yaml file artifact
-        uses: actions/upload-artifact@v3.1.2
+      - name: push api_versions.yaml changes
         if: ${{ steps.update_version.conclusion != 'skipped' }}
-        with:
-          name: api_versions
-          path: api_versions.yaml
-          retention-days: 1
+        run: |
+          git --no-pager diff
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add api_versions.yaml
+          git commit -m "update api_versions"
+          git push
 
-  build:
-    uses: ./.github/workflows/build_apps.yml
-    needs: compare_api_versions
+      - name: build with ufbt
+        if: ${{ steps.update_version.conclusion != 'skipped' }}
+        uses: flipperdevices/flipperzero-ufbt-action@v0.1.1
+        id: build-app
+        with:
+          sdk-channel: ${{ matrix.channel }}
+          app-dir: "./source/dolphin-counter-main"
+      - name: upload app artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
+          path: ${{ steps.build-app.outputs.fap-artifacts }}
+
+#       - name: create yaml file artifact
+#         uses: actions/upload-artifact@v3.1.2
+#         if: ${{ steps.update_version.conclusion != 'skipped' }}
+#         with:
+#           name: api_versions
+#           path: api_versions.yaml
+#           retention-days: 1
+
+#   build:
+#     uses: ./.github/workflows/build_apps.yml
+#     needs: compare_api_versions
