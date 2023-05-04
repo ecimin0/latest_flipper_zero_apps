@@ -27,7 +27,7 @@ jobs:
         with:
           sdk-channel: ${{ matrix.channel }}
 #           sdk-index-url: ${{ matrix.sdk-index-url }}
-          app-dir: "./source/*"
+          app-dir: "./source/dolphin-counter-main"
       - name: upload app artifacts
         uses: actions/upload-artifact@v3
         with:
