@@ -31,7 +31,7 @@ jobs:
       - name: get current version
         id: get_current
         run: |
-          echo "CURRENT=$(yq -r '.versions.${{ matrix.firmware_branch }}' api_versions.yaml)" >> "$GITHUB_ENV"
+          echo "CURRENT=$(yq -r '.versions.${{ matrix.sdk-channel }}' api_versions.yaml)" >> "$GITHUB_ENV"
           
       - name: checkout upstream repo
         uses: actions/checkout@v3
