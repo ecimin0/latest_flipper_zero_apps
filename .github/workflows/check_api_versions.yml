@@ -54,7 +54,7 @@ jobs:
           valueFile: 'api_versions.yaml'
           propertyPath: versions['${{ matrix.sdk-channel }}']
           value: ${{ env.UPSTREAM }}
-          commitChange: true
+          commitChange: false
           method: Update
 
       - name: push api_versions.yaml changes
