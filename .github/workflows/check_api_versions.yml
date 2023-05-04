@@ -52,7 +52,7 @@ jobs:
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: 'api_versions.yaml'
-          propertyPath: versions['${{ matrix.name }}']
+          propertyPath: versions['${{ matrix.sdk-channel }}']
           value: ${{ env.UPSTREAM }}
           commitChange: false
           method: Update
