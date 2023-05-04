@@ -1,4 +1,4 @@
-name: compare api versions
+name: FAP: Compare API Versions
 
 on:
   schedule:
