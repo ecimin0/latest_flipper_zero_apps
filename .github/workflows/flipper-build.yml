@@ -1,0 +1,34 @@
+name: "FAP: Build for multiple SDK sources"
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  ufbt-build-action:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        channel: [dev, release-candidate, release]
+#       matrix:
+#         include:
+#           - name: dev channel
+#             sdk-channel: dev
+#           - name: release channel
+#             sdk-channel: release
+#           - name: Unofficial firmware
+#             # example URL, replace with a valid one
+#             # you can also use other modes for specifying SDK sources
+#             sdk-index-url: https://flipper.example.com/directory.json
+#             sdk-channel: dev
+    name: 'ufbt: build for ${{ matrix.channel }}'
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: build with ufbt
+        uses: flipperdevices/flipperzero-ufbt-action@v0.1.1
+        id: build-app
+        with:
+          sdk-channel: ${{ matrix.channel }}
+#           sdk-index-url: ${{ matrix.sdk-index-url }}
+      - name: upload app artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
+          path: ${{ steps.build-app.outputs.fap-artifacts }}
