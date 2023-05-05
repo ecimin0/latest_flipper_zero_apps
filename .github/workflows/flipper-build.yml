@@ -21,7 +21,7 @@ jobs:
         id: build-app
         with:
           sdk-channel: ${{ matrix.channel }}
-          app-dir: "."
+          app-dir: "./source"
       - name: upload app artifacts
         uses: actions/upload-artifact@v3
         with:
