@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         channel: [dev, rc, release]
-        apps: [arkanoid, barcode_generator, blackjack, caesarcipher, calculator, chess, dice, dice2, dolphin-counter-main, doom-flipper-zero-main, dtmf_dolphin, flappy_bird, flashlight, flipperzero-i2ctools-main, game15, game2048, game_of_life, heap_defence_game, hex_viewer, mandelbrot, minesweeper, montyhall, morse_code, ocarina, paint, pocsag_pager, scorched_tanks, sentry_safe, spectrum_analyzer, tanksgame, tetris_game, text_viewer, tictactoe_game, totp, wav_player, zombiez]
     name: 'ufbt: build for ${{ matrix.channel }}'
     steps:
       - name: checkout
@@ -20,7 +19,7 @@ jobs:
         id: build-app
         with:
           sdk-channel: ${{ matrix.channel }}
-          app-dir: "./source/${{ matrix.apps }}"
+#           app-dir: "./source/${{ matrix.apps }}"
       - name: upload app artifacts
         uses: actions/upload-artifact@v3
         with:
