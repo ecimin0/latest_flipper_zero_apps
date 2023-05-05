@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+      - name: ls
+        run: pwd && ls
       - name: build with ufbt
         uses: flipperdevices/flipperzero-ufbt-action@v0.1.1
         id: build-app
