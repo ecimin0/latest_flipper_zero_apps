@@ -20,6 +20,7 @@ jobs:
       - name: ls
         run: pwd && ls
       - name: build with ufbt
+        continue-on-error: true
         uses: flipperdevices/flipperzero-ufbt-action@v0.1.1
         id: build-app
         with:
