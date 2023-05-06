@@ -2,7 +2,7 @@
 #include <gui/gui.h>
 #include <input/input.h>
 #include <stdlib.h>
-#include <counter_icons.h>
+#include <Counter_icons.h>
 #include <furi_hal_random.h>
 #include <string.h>
 
