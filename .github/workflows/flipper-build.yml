@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
 #         channel: [dev, rc, release]
-        apps: [arkanoid, blackjack, caesarcipher, chess, dice, dice2, dolphin-counter-main, dtmf_dolphin, flappy_bird, flashlight, flipperzero-i2ctools-main, game15, game2048, heap_defence_game, hex_viewer, morse_code, ocarina, paint, pocsag_pager, sentry_safe, spectrum_analyzer, tanksgame, text_viewer, tictactoe_game, usb_hid_autofire, wav_player, zombiez]
+        apps: [arkanoid, caesarcipher, chess, dice, dice2, dolphin-counter-main, dtmf_dolphin, flappy_bird, flashlight, flipperzero-i2ctools-main, game15, game2048, heap_defence_game, hex_viewer, morse_code, ocarina, paint, pocsag_pager, sentry_safe, spectrum_analyzer, tanksgame, text_viewer, tictactoe_game, usb_hid_autofire, wav_player, zombiez]
     name: 'ufbt: build for ${{ matrix.channel }}'
     steps:
       - name: checkout
