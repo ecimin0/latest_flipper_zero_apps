@@ -19,4 +19,5 @@ typedef struct {
     i2cScanner* scanner;
     i2cSniffer* sniffer;
     i2cSender* sender;
+    FuriMutex* mutex;
 } i2cTools;

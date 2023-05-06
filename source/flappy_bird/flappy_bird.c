@@ -71,6 +71,7 @@ typedef struct {
     PILAR pilars[FLAPPY_PILAR_MAX];
     bool debug;
     State state;
+    FuriMutex* mutex;
 } GameState;
 
 typedef struct {
@@ -186,7 +187,8 @@ static void flappy_game_flap(GameState* const game_state) {
 }
 
 static void flappy_game_render_callback(Canvas* const canvas, void* ctx) {
-    const GameState* game_state = acquire_mutex((ValueMutex*)ctx, 25);
+    const GameState* game_state = ctx;
+    furi_mutex_acquire(game_state->mutex, FuriWaitForever);
     if(game_state == NULL) {
         return;
     }
@@ -277,7 +279,7 @@ static void flappy_game_render_callback(Canvas* const canvas, void* ctx) {
         canvas_draw_str_aligned(canvas, 64, 41, AlignCenter, AlignBottom, buffer);
     }
 
-    release_mutex((ValueMutex*)ctx, game_state);
+    furi_mutex_release(game_state->mutex);
 }
 
 static void flappy_game_input_callback(InputEvent* input_event, FuriMessageQueue* event_queue) {
@@ -303,8 +305,8 @@ int32_t flappy_game_app(void* p) {
     GameState* game_state = malloc(sizeof(GameState));
     flappy_game_state_init(game_state);
 
-    ValueMutex state_mutex;
-    if(!init_mutex(&state_mutex, game_state, sizeof(GameState))) {
+    game_state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    if(!game_state->mutex) {
         FURI_LOG_E(TAG, "cannot create mutex\r\n");
         return_code = 255;
         goto free_and_exit;
@@ -312,7 +314,7 @@ int32_t flappy_game_app(void* p) {
 
     // Set system callbacks
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, flappy_game_render_callback, &state_mutex);
+    view_port_draw_callback_set(view_port, flappy_game_render_callback, game_state);
     view_port_input_callback_set(view_port, flappy_game_input_callback, event_queue);
 
     FuriTimer* timer =
@@ -326,7 +328,7 @@ int32_t flappy_game_app(void* p) {
     GameEvent event;
     for(bool processing = true; processing;) {
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 100);
-        GameState* game_state = (GameState*)acquire_mutex_block(&state_mutex);
+        furi_mutex_acquire(game_state->mutex, FuriWaitForever);
 
         if(event_status == FuriStatusOk) {
             // press events
@@ -368,7 +370,7 @@ int32_t flappy_game_app(void* p) {
         }
 
         view_port_update(view_port);
-        release_mutex(&state_mutex, game_state);
+        furi_mutex_release(game_state->mutex);
     }
 
     furi_timer_free(timer);
@@ -376,7 +378,7 @@ int32_t flappy_game_app(void* p) {
     gui_remove_view_port(gui, view_port);
     furi_record_close(RECORD_GUI);
     view_port_free(view_port);
-    delete_mutex(&state_mutex);
+    furi_mutex_free(game_state->mutex);
 
 free_and_exit:
     flappy_game_state_free(game_state);

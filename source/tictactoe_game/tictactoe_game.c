@@ -28,6 +28,7 @@ typedef struct {
 
     bool button_state;
 
+    FuriMutex* mutex;
 } TicTacToeState;
 
 typedef struct {
@@ -172,7 +173,9 @@ static void tictactoe_state_init(TicTacToeState* tictactoe_state) {
 }
 
 static void tictactoe_draw_callback(Canvas* const canvas, void* ctx) {
-    TicTacToeState* ticst = acquire_mutex((ValueMutex*)ctx, 25);
+    TicTacToeState* ticst = ctx;
+    furi_mutex_acquire(ticst->mutex, FuriWaitForever);
+
     if(ticst == NULL) {
         return;
     }
@@ -284,7 +287,7 @@ static void tictactoe_draw_callback(Canvas* const canvas, void* ctx) {
 
     tictactoe_draw(canvas, ticst);
 
-    release_mutex((ValueMutex*)ctx, ticst);
+    furi_mutex_release(ticst->mutex);
 }
 
 static void tictactoe_input_callback(InputEvent* input_event, FuriMessageQueue* event_queue) {
@@ -307,8 +310,8 @@ int32_t tictactoe_game_app(void* p) {
 
     TicTacToeState* tictactoe_state = malloc(sizeof(TicTacToeState));
 
-    ValueMutex state_mutex;
-    if(!init_mutex(&state_mutex, tictactoe_state, sizeof(TicTacToeState))) {
+    tictactoe_state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    if(!tictactoe_state->mutex) {
         FURI_LOG_E(TAG, "Cannot create mutex\r\n");
         furi_message_queue_free(event_queue);
         free(tictactoe_state);
@@ -317,7 +320,7 @@ int32_t tictactoe_game_app(void* p) {
 
     // Set system callbacks
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, tictactoe_draw_callback, &state_mutex);
+    view_port_draw_callback_set(view_port, tictactoe_draw_callback, tictactoe_state);
     view_port_input_callback_set(view_port, tictactoe_input_callback, event_queue);
 
     tictactoe_state->timer =
@@ -333,7 +336,7 @@ int32_t tictactoe_game_app(void* p) {
     GameEvent event;
     for(bool processing = true; processing;) {
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 100);
-        TicTacToeState* tictactoe_state = (TicTacToeState*)acquire_mutex_block(&state_mutex);
+        furi_mutex_acquire(tictactoe_state->mutex, FuriWaitForever);
 
         if(event_status == FuriStatusOk) {
             // Key events
@@ -366,7 +369,7 @@ int32_t tictactoe_game_app(void* p) {
         }
 
         view_port_update(view_port);
-        release_mutex(&state_mutex, tictactoe_state);
+        furi_mutex_release(tictactoe_state->mutex);
     }
 
     furi_timer_free(tictactoe_state->timer);
@@ -375,7 +378,7 @@ int32_t tictactoe_game_app(void* p) {
     furi_record_close(RECORD_GUI);
     view_port_free(view_port);
     furi_message_queue_free(event_queue);
-    delete_mutex(&state_mutex);
+    furi_mutex_free(tictactoe_state->mutex);
     free(tictactoe_state);
 
     return 0;

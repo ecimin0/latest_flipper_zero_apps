@@ -75,7 +75,8 @@ int calculate_check_digit(PluginState* plugin_state, BarcodeType* type) {
 }
 
 static void render_callback(Canvas* const canvas, void* ctx) {
-    PluginState* plugin_state = acquire_mutex((ValueMutex*)ctx, 25);
+    PluginState* plugin_state = ctx;
+    furi_mutex_acquire(plugin_state->mutex, FuriWaitForever);
     if(plugin_state == NULL) {
         return;
     }
@@ -158,7 +159,7 @@ static void render_callback(Canvas* const canvas, void* ctx) {
             BARCODE_HEIGHT + 2); //end safety
     }
 
-    release_mutex((ValueMutex*)ctx, plugin_state);
+    furi_mutex_free(plugin_state->mutex);
 }
 
 static void input_callback(InputEvent* input_event, FuriMessageQueue* event_queue) {
@@ -299,8 +300,9 @@ int32_t barcode_generator_app(void* p) {
 
     PluginState* plugin_state = malloc(sizeof(PluginState));
     barcode_generator_state_init(plugin_state);
-    ValueMutex state_mutex;
-    if(!init_mutex(&state_mutex, plugin_state, sizeof(PluginState))) {
+
+    plugin_state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    if(!plugin_state->mutex) {
         FURI_LOG_E("barcode_generator", "cannot create mutex\r\n");
         furi_message_queue_free(event_queue);
         free(plugin_state);
@@ -309,7 +311,7 @@ int32_t barcode_generator_app(void* p) {
 
     // Set system callbacks
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, render_callback, &state_mutex);
+    view_port_draw_callback_set(view_port, render_callback, plugin_state);
     view_port_input_callback_set(view_port, input_callback, event_queue);
 
     // Open GUI and register view_port
@@ -319,7 +321,7 @@ int32_t barcode_generator_app(void* p) {
     PluginEvent event;
     for(bool processing = true; processing;) {
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 100);
-        PluginState* plugin_state = (PluginState*)acquire_mutex_block(&state_mutex);
+        furi_mutex_acquire(plugin_state->mutex, FuriWaitForever);
 
         if(event_status == FuriStatusOk) {
             // press events
@@ -342,7 +344,7 @@ int32_t barcode_generator_app(void* p) {
         }
 
         view_port_update(view_port);
-        release_mutex(&state_mutex, plugin_state);
+        furi_mutex_free(plugin_state);
     }
 
     view_port_enabled_set(view_port, false);

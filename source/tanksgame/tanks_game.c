@@ -105,6 +105,7 @@ typedef struct {
     uint8_t sent;
     PlayerState* p1;
     PlayerState* p2;
+    FuriMutex* mutex;
 } TanksState;
 
 typedef enum {
@@ -388,7 +389,9 @@ void tanks_game_deserialize_and_render(unsigned char* data, Canvas* const canvas
 }
 
 static void tanks_game_render_callback(Canvas* const canvas, void* ctx) {
-    const TanksState* tanks_state = acquire_mutex((ValueMutex*)ctx, 25);
+    const TanksState* tanks_state = ctx;
+    furi_mutex_acquire(tanks_state->mutex, FuriWaitForever);
+
     if(tanks_state == NULL) {
         return;
     }
@@ -415,7 +418,7 @@ static void tanks_game_render_callback(Canvas* const canvas, void* ctx) {
 
         canvas_draw_frame(canvas, 0, 0, 128, 64);
 
-        release_mutex((ValueMutex*)ctx, tanks_state);
+        furi_mutex_release(tanks_state->mutex);
         return;
     }
 
@@ -432,7 +435,7 @@ static void tanks_game_render_callback(Canvas* const canvas, void* ctx) {
 
         tanks_game_render_constant_cells(canvas);
 
-        release_mutex((ValueMutex*)ctx, tanks_state);
+        furi_mutex_release(tanks_state->mutex);
         return;
     }
 
@@ -615,7 +618,7 @@ static void tanks_game_render_callback(Canvas* const canvas, void* ctx) {
     tanks_game_deserialize_and_render(data, canvas);
     // TEST enf
 
-    release_mutex((ValueMutex*)ctx, tanks_state);
+    furi_mutex_release(tanks_state->mutex);
 }
 
 static void tanks_game_input_callback(InputEvent* input_event, FuriMessageQueue* event_queue) {
@@ -1188,8 +1191,8 @@ int32_t tanks_game_app(void* p) {
     tanks_state->state = GameStateMenu;
     tanks_state->menu_state = MenuStateSingleMode;
 
-    ValueMutex state_mutex;
-    if(!init_mutex(&state_mutex, tanks_state, sizeof(TanksState))) {
+    tanks_state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    if(!tanks_state->mutex) {
         FURI_LOG_E("Tanks", "cannot create mutex\r\n");
         furi_message_queue_free(event_queue);
         free(tanks_state);
@@ -1197,7 +1200,7 @@ int32_t tanks_game_app(void* p) {
     }
 
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, tanks_game_render_callback, &state_mutex);
+    view_port_draw_callback_set(view_port, tanks_game_render_callback, tanks_state);
     view_port_input_callback_set(view_port, tanks_game_input_callback, event_queue);
 
     FuriTimer* timer =
@@ -1221,7 +1224,7 @@ int32_t tanks_game_app(void* p) {
     for(bool processing = true; processing;) {
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 100);
 
-        TanksState* tanks_state = (TanksState*)acquire_mutex_block(&state_mutex);
+        furi_mutex_acquire(tanks_state->mutex, FuriWaitForever);
 
         if(event_status == FuriStatusOk) {
             // press events
@@ -1422,7 +1425,7 @@ int32_t tanks_game_app(void* p) {
         }
 
         view_port_update(view_port);
-        release_mutex(&state_mutex, tanks_state);
+        furi_mutex_release(tanks_state->mutex);
         furi_delay_ms(1);
     }
 
@@ -1434,13 +1437,13 @@ int32_t tanks_game_app(void* p) {
         subghz_tx_rx_worker_free(subghz_txrx);
     }
 
+    furi_mutex_free(tanks_state->mutex);
     furi_timer_free(timer);
     view_port_enabled_set(view_port, false);
     gui_remove_view_port(gui, view_port);
     furi_record_close(RECORD_GUI);
     view_port_free(view_port);
     furi_message_queue_free(event_queue);
-    delete_mutex(&state_mutex);
 
     if(tanks_state->p1 != NULL) {
         free(tanks_state->p1);
