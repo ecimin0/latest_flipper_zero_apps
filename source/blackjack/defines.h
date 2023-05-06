@@ -73,4 +73,5 @@ typedef struct {
     QueueState queue_state;
     Menu* menu;
     unsigned int last_tick;
+    FuriMutex* mutex;
 } GameState;

@@ -434,7 +434,6 @@ static void draw_box(Canvas* canvas, Box* box, int x, int y) {
 static void heap_defense_render_callback(Canvas* const canvas, void* mutex) {
     furi_assert(mutex);
 
-    // const GameState* game = acquire_mutex((ValueMutex*)mutex, 25);
     const GameState* game = mutex;
     furi_mutex_acquire(game->mutex, FuriWaitForever);
 
@@ -443,7 +442,6 @@ static void heap_defense_render_callback(Canvas* const canvas, void* mutex) {
         FURI_LOG_W(TAG, "[DAED_DRAW]func: [%s] line: %d ", __FUNCTION__, __LINE__);
 
         canvas_draw_icon_animation(canvas, 0, 0, animations[game->animation]);
-        // release_mutex((ValueMutex*)mutex, game);
         furi_mutex_release(game->mutex);
         return;
     }
@@ -484,7 +482,6 @@ static void heap_defense_render_callback(Canvas* const canvas, void* mutex) {
         }
     }
 
-    // release_mutex((ValueMutex*)mutex, game);
     furi_mutex_release(game->mutex);
 }
 
@@ -510,8 +507,6 @@ int32_t heap_defence_app(void* p) {
     FuriMessageQueue* event_queue = furi_message_queue_alloc(8, sizeof(GameEvent));
     GameState* game = allocGameState();
 
-    // ValueMutex state_mutex;
-    // if(!init_mutex(&state_mutex, game, sizeof(GameState))) {
     game->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
     if(!game->mutex) {
         game_destroy(game);
@@ -520,7 +515,6 @@ int32_t heap_defence_app(void* p) {
 
     assets_load();
     ViewPort* view_port = view_port_alloc();
-    // view_port_draw_callback_set(view_port, heap_defense_render_callback, &state_mutex);
     view_port_draw_callback_set(view_port, heap_defense_render_callback, game);
     view_port_input_callback_set(view_port, heap_defense_input_callback, event_queue);
 
@@ -543,7 +537,6 @@ int32_t heap_defence_app(void* p) {
             continue;
         }
 
-        // game = (GameState*)acquire_mutex_block(&state_mutex);
         furi_mutex_acquire(game->mutex, FuriWaitForever);
 
         //unset vibration
@@ -581,7 +574,6 @@ int32_t heap_defence_app(void* p) {
                 notification_message(notification, &sequence_error);
             }
         }
-        // release_mutex(&state_mutex, game);
         furi_mutex_release(game->mutex);
         view_port_update(view_port);
     }
@@ -595,7 +587,6 @@ int32_t heap_defence_app(void* p) {
     furi_message_queue_free(event_queue);
     assets_clear();
     furi_mutex_free(game->mutex);
-    // delete_mutex(&state_mutex);
     game_destroy(game);
 
     return 0;

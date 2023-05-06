@@ -189,8 +189,6 @@ static void draw_results(const State* state, Canvas* canvas) {
 }
 
 static void draw_callback(Canvas* canvas, void* ctx) {
-    // const State* state = acquire_mutex((ValueMutex*)ctx, 25);
-
     const State* state = ctx;
     furi_mutex_acquire(state->mutex, FuriWaitForever);
     if(state == NULL) {
@@ -207,7 +205,6 @@ static void draw_callback(Canvas* canvas, void* ctx) {
         draw_dice(state, canvas);
     }
 
-    // release_mutex((ValueMutex*)ctx, state);
     furi_mutex_release(state->mutex);
 }
 
@@ -234,10 +231,8 @@ int32_t dice_dnd_app(void* p) {
     State* state = malloc(sizeof(State));
     init(state);
 
-    // ValueMutex state_mutex;
-    // if(!init_mutex(&state_mutex, state, sizeof(State))) {
-        state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
-        if(!state->mutex) {
+    state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    if(!state->mutex) {
         FURI_LOG_E(TAG, "cannot create mutex\r\n");
         free(state);
         return 255;
@@ -259,7 +254,6 @@ int32_t dice_dnd_app(void* p) {
     AppEvent event;
     for(bool processing = true; processing;) {
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 100);
-        // State* state = (State*)acquire_mutex_block(&state_mutex);
         furi_mutex_acquire(state->mutex, FuriWaitForever);
 
         if(event_status == FuriStatusOk) {
@@ -324,7 +318,6 @@ int32_t dice_dnd_app(void* p) {
         }
 
         view_port_update(view_port);
-        // release_mutex(&state_mutex, state);
         furi_mutex_release(state->mutex);
     }
 

@@ -15,10 +15,12 @@ typedef struct {
     selected_position selected;
     bool board[32][16];
     bool isDrawing;
+    FuriMutex* mutex;
 } PaintData;
 
 void paint_draw_callback(Canvas* canvas, void* ctx) {
-    const PaintData* paint_state = acquire_mutex((ValueMutex*)ctx, 25);
+    const PaintData* paint_state = ctx;
+    furi_mutex_acquire(paint_state->mutex, FuriWaitForever);
     UNUSED(ctx);
     canvas_clear(canvas);
     canvas_set_color(canvas, ColorBlack);
@@ -39,7 +41,7 @@ void paint_draw_callback(Canvas* canvas, void* ctx) {
         canvas, paint_state->selected.x * 4 + 1, paint_state->selected.y * 4 + 1, 2, 2);
 
     //release the mutex
-    release_mutex((ValueMutex*)ctx, paint_state);
+    furi_mutex_release(paint_state->mutex);
 }
 
 void paint_input_callback(InputEvent* input_event, void* ctx) {
@@ -53,8 +55,8 @@ int32_t paint_app(void* p) {
     FuriMessageQueue* event_queue = furi_message_queue_alloc(8, sizeof(InputEvent));
 
     PaintData* paint_state = malloc(sizeof(PaintData));
-    ValueMutex paint_state_mutex;
-    if(!init_mutex(&paint_state_mutex, paint_state, sizeof(PaintData))) {
+    paint_state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    if(!paint_state->mutex) {
         FURI_LOG_E("paint", "cannot create mutex\r\n");
         free(paint_state);
         return -1;
@@ -62,7 +64,7 @@ int32_t paint_app(void* p) {
 
     // Configure view port
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, paint_draw_callback, &paint_state_mutex);
+    view_port_draw_callback_set(view_port, paint_draw_callback, paint_state);
     view_port_input_callback_set(view_port, paint_input_callback, event_queue);
 
     // Register view port in GUI

@@ -21,6 +21,7 @@ typedef struct {
 typedef struct {
     bool revive;
     int evo;
+    FuriMutex* mutex;
 } State;
 
 unsigned char new[TOTAL_PIXELS] = {};
@@ -92,7 +93,9 @@ static void input_callback(InputEvent* input_event, FuriMessageQueue* event_queu
 }
 
 static void render_callback(Canvas* canvas, void* ctx) {
-    State* state = (State*)acquire_mutex((ValueMutex*)ctx, 25);
+    const State* state = ctx;
+    furi_mutex_acquire(state->mutex, FuriWaitForever);
+
     canvas_clear(canvas);
 
     for(int i = 0; i < TOTAL_PIXELS; ++i) {
@@ -100,7 +103,7 @@ static void render_callback(Canvas* canvas, void* ctx) {
         int y = (int)(i / SCREEN_WIDTH);
         if(fields[current][i] == 1) canvas_draw_dot(canvas, x, y);
     }
-    release_mutex((ValueMutex*)ctx, state);
+    furi_mutex_free(state->mutex);
 }
 
 int32_t game_of_life_app(void* p) {
@@ -112,8 +115,8 @@ int32_t game_of_life_app(void* p) {
 
     State* _state = malloc(sizeof(State));
 
-    ValueMutex state_mutex;
-    if(!init_mutex(&state_mutex, _state, sizeof(State))) {
+    _state->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    if(!_state->mutex) {
         printf("cannot create mutex\r\n");
         furi_message_queue_free(event_queue);
         free(_state);
@@ -121,7 +124,7 @@ int32_t game_of_life_app(void* p) {
     }
 
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, render_callback, &state_mutex);
+    view_port_draw_callback_set(view_port, render_callback, _state);
     view_port_input_callback_set(view_port, input_callback, event_queue);
 
     Gui* gui = furi_record_open(RECORD_GUI);
@@ -129,7 +132,7 @@ int32_t game_of_life_app(void* p) {
 
     AppEvent event;
     for(bool processing = true; processing;) {
-        State* state = (State*)acquire_mutex_block(&state_mutex);
+        furi_mutex_acquire(_state->mutex, FuriWaitForever);
         FuriStatus event_status = furi_message_queue_get(event_queue, &event, 25);
 
         if(event_status == FuriStatusOk && event.type == EventTypeKey &&
@@ -137,15 +140,15 @@ int32_t game_of_life_app(void* p) {
             if(event.input.key == InputKeyBack) {
                 // furiac_exit(NULL);
                 processing = false;
-                release_mutex(&state_mutex, state);
+                furi_mutex_free(_state);
                 break;
             }
         }
 
-        update_field(state);
+        update_field(_state);
 
         view_port_update(view_port);
-        release_mutex(&state_mutex, state);
+        furi_mutex_free(_state);
     }
 
     view_port_enabled_set(view_port, false);
@@ -153,7 +156,7 @@ int32_t game_of_life_app(void* p) {
     furi_record_close(RECORD_GUI);
     view_port_free(view_port);
     furi_message_queue_free(event_queue);
-    delete_mutex(&state_mutex);
+    furi_mutex_free(_state->mutex);
     free(_state);
 
     return 0;
