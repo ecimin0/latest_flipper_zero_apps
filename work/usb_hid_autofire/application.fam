@@ -1,0 +1,11 @@
+App(
+    appid="usb_hid_autofire",
+    name="usb_hid_autofire",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="usb_hid_autofire_app",
+    requires=["gui"],
+    stack_size=1 * 1024,
+    order=90,
+	fap_icon="icon.png",
+    fap_category="Tools",
+)
