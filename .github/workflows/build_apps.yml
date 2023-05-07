@@ -64,5 +64,5 @@ jobs:
       - name: upload app artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.repository.name }}-${{ steps.build.outputs.suffix }}
-          path: ${{ steps.build.outputs.fap-artifacts }}
+          name: ${{ github.event.repository.name }}-${{ github.ref_name }}_${{ github.run_id }}
+          path: ${{ github.event.repository.name }}_${{ github.ref_name }}_${{ github.run_id }}
