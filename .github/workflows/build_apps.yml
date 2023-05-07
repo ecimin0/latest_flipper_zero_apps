@@ -1,10 +1,11 @@
 name: "FAP: Build apps for firmware matching branch"
 
 on:
-  branches:
-    - dev
-    - release
-    - rc
+  push:
+    branches:
+      - dev
+      - release
+      - rc
   workflow_dispatch: # on button click
 
 jobs:
