@@ -45,7 +45,7 @@ jobs:
         run: |
           cp -r source/* flipperzero-firmware/applications_user/
           cd flipperzero-firmware
-          for app in $(grep -r "appid" flipperzero-firmware/applications_user/ | awk -F '=' 'BEGIN { ORS=" " }; {print $2}' | sed 's@"@@g;s@,@@g'); do ./fbt fap_$app; done
+          for app in $(grep -r "appid" applications_user/ | awk -F '=' 'BEGIN { ORS=" " }; {print $2}' | sed 's@"@@g;s@,@@g'); do ./fbt fap_$app; done
 
 #          cd flipperzero-firmware && ./fbt fap_
 #          cp ./build/f7-firmware-D/.extapps/*.fap ../apps/${{ matrix.firmware_branch }}/
