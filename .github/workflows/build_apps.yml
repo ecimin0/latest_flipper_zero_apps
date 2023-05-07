@@ -44,6 +44,7 @@ jobs:
         # if: ${{ steps.dl_artifact.outcome != 'failure' }}
         run: |
           cp -r source/* flipperzero-firmware/applications_user/
+          cd flipperzero-firmware
           for app in $(grep -r "appid" flipperzero-firmware/applications_user/ | awk -F '=' 'BEGIN { ORS=" " }; {print $2}' | sed 's@"@@g;s@,@@g'); do ./fbt fap_$app; done
 
 #          cd flipperzero-firmware && ./fbt fap_
