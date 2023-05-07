@@ -11,9 +11,9 @@ on:
 jobs:
   build_apps:
 
-    strategy:
-      matrix:
-        firmware_branch: [dev, release-candidate, release]
+    # strategy:
+    #   matrix:
+    #     firmware_branch: [dev, release-candidate, release]
 
     name: build application
     runs-on: ubuntu-latest
