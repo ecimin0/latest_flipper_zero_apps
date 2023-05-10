@@ -24,14 +24,18 @@ jobs:
 #             sdk-index-url: https://flipper.example.com/directory.json
 #             sdk-channel: dev
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: checkout this repo
         uses: actions/checkout@v3
+        with:
+          ref: ${{ matrix.sdk-channel }}
 
       - name: get current version
         id: get_current
         run: |
-          echo "CURRENT=$(yq -r '.versions.${{ matrix.sdk-channel }}' api_versions.yaml)" >> "$GITHUB_ENV"
+          echo "CURRENT=$(yq -r '.version' api_versions.yaml)" >> "$GITHUB_ENV"
           
       - name: checkout upstream repo
         uses: actions/checkout@v3
@@ -52,12 +56,36 @@ jobs:
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: 'api_versions.yaml'
-          propertyPath: versions['${{ matrix.sdk-channel }}']
+          propertyPath: version
           value: ${{ env.UPSTREAM }}
           commitChange: false
           method: Update
 
-      - name: push api_versions.yaml changes
+      - name: build applications
+        id: build_apps
+        if: ${{ steps.update_version.conclusion != 'skipped' }}
+        run: |
+          cp -r source/* flipperzero-firmware/applications_user/
+          cd flipperzero-firmware
+          for app in $(grep -r "appid" applications_user/ | awk -F '=' 'BEGIN { ORS=" " }; {print $2}' | sed 's@"@@g;s@,@@g'); do ./fbt fap_$app; done
+
+      - name: upload app artifacts
+        if: ${{ steps.build_apps.conclusion != 'skipped' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.repository.name }}_${{ github.ref_name }}_${{ github.run_id }}
+          path: flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
+
+#       - name: create yaml file artifact
+#         uses: actions/upload-artifact@v3.1.2
+#         if: ${{ steps.update_version.conclusion != 'skipped' }}
+#         with:
+#           name: api_versions
+#           path: api_versions.yaml
+#           retention-days: 1
+
+      - name: commit and push changes
+        id: push_changes
         if: ${{ steps.update_version.conclusion != 'skipped' }}
         run: |
           git pull
@@ -68,28 +96,14 @@ jobs:
           git commit -m "update api_versions"
           git push
 
-      - name: build with ufbt
-        if: ${{ steps.update_version.conclusion != 'skipped' }}
-        uses: flipperdevices/flipperzero-ufbt-action@v0.1.1
-        id: build-app
+      - name: create release
+        if: ${{ steps.push_changes.conclusion != 'skipped' }}
+        uses: ncipollo/release-action@v1
         with:
-          sdk-channel: ${{ matrix.sdk-channel }}
-          app-dir: "./source/dolphin-counter-main"
+          artifacts: ${{ steps.build_apps.outputs.fap-artifacts }}
+          commit: ${{ matrix.sdk-channel }}
+          tag: ${{ matrix.name }}
 
-      - name: upload app artifacts
-        if: ${{ steps.build-app.conclusion != 'skipped' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
-          path: ${{ steps.build-app.outputs.fap-artifacts }}
-
-#       - name: create yaml file artifact
-#         uses: actions/upload-artifact@v3.1.2
-#         if: ${{ steps.update_version.conclusion != 'skipped' }}
-#         with:
-#           name: api_versions
-#           path: api_versions.yaml
-#           retention-days: 1
 
 #   build:
 #     uses: ./.github/workflows/build_apps.yml
