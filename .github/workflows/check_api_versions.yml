@@ -102,7 +102,7 @@ jobs:
         with:
           artifacts: flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
           commit: ${{ matrix.sdk-channel }}
-          tag: ${{ matrix.name }}
+          tag: ${{ matrix.name }}_${{ github.run_id }}
 
 
 #   build:
