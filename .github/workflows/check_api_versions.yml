@@ -33,7 +33,7 @@ jobs:
       - name: get current version
         id: get_current
         run: |
-          echo "CURRENT=$(yq -r '.versions' api_versions.yaml)" >> "$GITHUB_ENV"
+          echo "CURRENT=$(yq -r '.version' api_versions.yaml)" >> "$GITHUB_ENV"
           
       - name: checkout upstream repo
         uses: actions/checkout@v3
