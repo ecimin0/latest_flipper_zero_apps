@@ -29,6 +29,7 @@ jobs:
     steps:
       - name: checkout this repo
         uses: actions/checkout@v3
+        ref: ${{ matrix.name }}
 
       - name: get current version
         id: get_current
@@ -60,7 +61,7 @@ jobs:
           method: Update
 
       - name: build applications
-        id: build
+        id: build_apps
         if: ${{ steps.update_version.conclusion != 'skipped' }}
         run: |
           cp -r source/* flipperzero-firmware/applications_user/
@@ -68,7 +69,7 @@ jobs:
           for app in $(grep -r "appid" applications_user/ | awk -F '=' 'BEGIN { ORS=" " }; {print $2}' | sed 's@"@@g;s@,@@g'); do ./fbt fap_$app; done
 
       - name: upload app artifacts
-        if: ${{ steps.build-app.conclusion != 'skipped' }}
+        if: ${{ steps.build_apps.conclusion != 'skipped' }}
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
@@ -99,6 +100,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: ${{ steps.build-app.outputs.fap-artifacts }}
+          commit: ${{ matrix.name }}
+          tag: ${{ matrix.name }}
 
 
 #   build:
