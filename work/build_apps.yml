@@ -1,0 +1,68 @@
+name: "FAP: Build apps for firmware matching branch"
+
+on:
+  push:
+    branches:
+      - dev
+      - release
+      - rc
+  workflow_dispatch: # on button click
+
+jobs:
+  build_apps:
+
+    # strategy:
+    #   matrix:
+    #     firmware_branch: [dev, release-candidate, release]
+
+    name: build application
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout this repo
+        uses: actions/checkout@v3
+
+      # - name: download yaml artifact
+      #   id: dl_artifact
+      #   uses: actions/download-artifact@v3.0.2
+      #   continue-on-error: true
+      #   with:
+      #     name: api_versions
+      #     path: api_versions.yaml
+
+      - name: checkout flipper zero firmware repo
+        uses: actions/checkout@v3
+        # if: ${{ steps.dl_artifact.outcome != 'failure' }}
+        with:
+          repository: flipperdevices/flipperzero-firmware
+          path: './flipperzero-firmware'
+          submodules: true
+          # ref: ${{ matrix.firmware_branch }}
+          ref: ${{ github.ref_name }}
+
+      - name: build
+        id: build
+        # if: ${{ steps.dl_artifact.outcome != 'failure' }}
+        run: |
+          cp -r source/* flipperzero-firmware/applications_user/
+          cd flipperzero-firmware
+          for app in $(grep -r "appid" applications_user/ | awk -F '=' 'BEGIN { ORS=" " }; {print $2}' | sed 's@"@@g;s@,@@g'); do ./fbt fap_$app; done
+
+#          cd flipperzero-firmware && ./fbt fap_
+#          cp ./build/f7-firmware-D/.extapps/*.fap ../apps/${{ matrix.firmware_branch }}/
+
+      # - name: commit and push
+      #   if: ${{ steps.dl_artifact.outcome != 'failure' }}
+      #   run: |
+      #     git pull
+      #     git --no-pager diff
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git add apps/${{ matrix.firmware_branch }}/* api_versions.yaml
+      #     git commit -m "built app via build_apps workflow"
+      #     git push
+
+      - name: upload app artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.repository.name }}-${{ github.ref_name }}_${{ github.run_id }}
+          path: flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap

@@ -1,0 +1,33 @@
+# name: "FAP: Build for multiple SDK sources"
+# on:
+#   push:
+#     branches:
+#       - dev
+#       - release
+#       - rc
+#   workflow_dispatch: # on click
+# jobs:
+#   ufbt-build-action:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+# #         channel: [dev, rc, release]
+#         # apps: [arkanoid, caesarcipher, dice, dice2, dolphin-counter-main, dtmf_dolphin, flappy_bird, flashlight, flipperzero-i2ctools-main, game15, game2048, hex_viewer, morse_code, ocarina, paint, sentry_safe, spectrum_analyzer, tanksgame, text_viewer, tictactoe_game, usb_hid_autofire, wav_player, zombiez]
+#     name: "ufbt: build for ${{ matrix.apps }}"
+#     steps:
+#       - name: checkout
+#         uses: actions/checkout@v3
+#       - name: ls
+#         run: pwd && ls
+# #       - name: build with ufbt
+# #         uses: flipperdevices/flipperzero-ufbt-action@v0.1.1
+# #         id: build-app
+# #         with:
+# # #           sdk-channel: ${{ matrix.channel }}
+# #           sdk-channel: ${{ github.ref_name }}
+# #           app-dir: "./source/${{ matrix.apps }}"
+#       - name: upload app artifacts
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
+#           path: ${{ steps.build-app.outputs.fap-artifacts }}
