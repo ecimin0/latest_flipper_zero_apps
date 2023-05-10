@@ -1,4 +1,1 @@
-versions:
-  dev: '26.0'
-  release: '23.0'
-  rc: '23.0'
+version: '26.0'
