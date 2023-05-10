@@ -24,6 +24,8 @@ jobs:
 #             sdk-index-url: https://flipper.example.com/directory.json
 #             sdk-channel: dev
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: checkout this repo
         uses: actions/checkout@v3
@@ -31,7 +33,7 @@ jobs:
       - name: get current version
         id: get_current
         run: |
-          echo "CURRENT=$(yq -r '.versions.${{ matrix.sdk-channel }}' api_versions.yaml)" >> "$GITHUB_ENV"
+          echo "CURRENT=$(yq -r '.versions' api_versions.yaml)" >> "$GITHUB_ENV"
           
       - name: checkout upstream repo
         uses: actions/checkout@v3
@@ -57,24 +59,13 @@ jobs:
           commitChange: false
           method: Update
 
-      - name: push api_versions.yaml changes
+      - name: build applications
+        id: build
         if: ${{ steps.update_version.conclusion != 'skipped' }}
         run: |
-          git pull
-          git --no-pager diff
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add api_versions.yaml
-          git commit -m "update api_versions"
-          git push
-
-      - name: build with ufbt
-        if: ${{ steps.update_version.conclusion != 'skipped' }}
-        uses: flipperdevices/flipperzero-ufbt-action@v0.1.1
-        id: build-app
-        with:
-          sdk-channel: ${{ matrix.sdk-channel }}
-          app-dir: "./source/dolphin-counter-main"
+          cp -r source/* flipperzero-firmware/applications_user/
+          cd flipperzero-firmware
+          for app in $(grep -r "appid" applications_user/ | awk -F '=' 'BEGIN { ORS=" " }; {print $2}' | sed 's@"@@g;s@,@@g'); do ./fbt fap_$app; done
 
       - name: upload app artifacts
         if: ${{ steps.build-app.conclusion != 'skipped' }}
@@ -90,6 +81,25 @@ jobs:
 #           name: api_versions
 #           path: api_versions.yaml
 #           retention-days: 1
+
+      - name: commit and push changes
+        id: push_changes
+        if: ${{ steps.update_version.conclusion != 'skipped' }}
+        run: |
+          git pull
+          git --no-pager diff
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add api_versions.yaml
+          git commit -m "update api_versions"
+          git push
+
+      - name: create release
+        if: ${{ steps.push_changes.conclusion != 'skipped' }}
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: ${{ steps.build-app.outputs.fap-artifacts }}
+
 
 #   build:
 #     uses: ./.github/workflows/build_apps.yml
