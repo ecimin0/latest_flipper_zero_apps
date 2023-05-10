@@ -56,7 +56,7 @@ jobs:
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: 'api_versions.yaml'
-          propertyPath: versions['${{ matrix.sdk-channel }}']
+          propertyPath: version
           value: ${{ env.UPSTREAM }}
           commitChange: false
           method: Update
@@ -73,7 +73,7 @@ jobs:
         if: ${{ steps.build_apps.conclusion != 'skipped' }}
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
+          name: ${{ github.event.repository.name }}-${{ steps.build_apps.outputs.suffix }}
           path: ${{ steps.build-app.outputs.fap-artifacts }}
 
 #       - name: create yaml file artifact
