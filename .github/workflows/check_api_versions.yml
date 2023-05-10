@@ -73,8 +73,8 @@ jobs:
         if: ${{ steps.build_apps.conclusion != 'skipped' }}
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ github.event.repository.name }}-${{ steps.build_apps.outputs.suffix }}
-          path: ${{ steps.build_apps.outputs.fap-artifacts }}
+          name: ${{ github.event.repository.name }}_${{ github.ref_name }}_${{ github.run_id }}
+          path: flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
 
 #       - name: create yaml file artifact
 #         uses: actions/upload-artifact@v3.1.2
