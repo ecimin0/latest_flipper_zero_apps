@@ -100,7 +100,7 @@ jobs:
         if: ${{ steps.push_changes.conclusion != 'skipped' }}
         uses: ncipollo/release-action@v1
         with:
-          artifacts: ${{ steps.build_apps.outputs.fap-artifacts }}
+          artifacts: flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
           commit: ${{ matrix.sdk-channel }}
           tag: ${{ matrix.name }}
 
