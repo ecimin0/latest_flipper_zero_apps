@@ -1,110 +1,110 @@
-name: "FAP: Compare API Versions"
+# name: "FAP: Compare API Versions"
 
-on:
-  schedule:
-    - cron: '49 * * * *'
-  workflow_dispatch: # on button click
+# on:
+#   schedule:
+#     - cron: '49 * * * *'
+#   workflow_dispatch: # on button click
 
-jobs:
-  compare_api_versions:
-    name: compare api versions
-    strategy:
-      matrix:
-#         firmware_branch: [dev, rc, release]
-        include:
-          - name: dev
-            sdk-channel: dev
-          - name: release
-            sdk-channel: release
-          - name: release-candidate
-            sdk-channel: rc
-#           - name: Unofficial firmware
-#             # example URL, replace with a valid one
-#             # you can also use other modes for specifying SDK sources
-#             sdk-index-url: https://flipper.example.com/directory.json
+# jobs:
+#   compare_api_versions:
+#     name: compare api versions
+#     strategy:
+#       matrix:
+# #         firmware_branch: [dev, rc, release]
+#         include:
+#           - name: dev
 #             sdk-channel: dev
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: checkout this repo
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ matrix.sdk-channel }}
-
-      - name: get current version
-        id: get_current
-        run: |
-          echo "CURRENT=$(yq -r '.version' api_versions.yaml)" >> "$GITHUB_ENV"
-          
-      - name: checkout upstream repo
-        uses: actions/checkout@v3
-        with:
-          repository: flipperdevices/flipperzero-firmware
-          path: './flipperzero-firmware'
-          ref: ${{ matrix.name }}
-          submodules: true
-      
-      - name: get upstream API version
-        id: get_upstream
-        run: |
-          echo "UPSTREAM=$(awk -F ',' 'NR==2{print $3}' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
-
-      - name: update api_versions.yaml
-        id: update_version
-        if: ${{ env.CURRENT < env.UPSTREAM }}
-        uses: fjogeleit/yaml-update-action@main
-        with:
-          valueFile: 'api_versions.yaml'
-          propertyPath: version
-          value: ${{ env.UPSTREAM }}
-          commitChange: false
-          method: Update
-
-      - name: build applications
-        id: build_apps
-        if: ${{ steps.update_version.conclusion != 'skipped' }}
-        run: |
-          cp -r source/* flipperzero-firmware/applications_user/
-          cd flipperzero-firmware
-          for app in $(grep -r "appid" applications_user/ | awk -F '=' 'BEGIN { ORS=" " }; {print $2}' | sed 's@"@@g;s@,@@g'); do ./fbt fap_$app; done
-
-      - name: upload app artifacts
-        if: ${{ steps.build_apps.conclusion != 'skipped' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ github.event.repository.name }}_${{ github.ref_name }}_${{ github.run_id }}
-          path: flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
-
-#       - name: create yaml file artifact
-#         uses: actions/upload-artifact@v3.1.2
-#         if: ${{ steps.update_version.conclusion != 'skipped' }}
+#           - name: release
+#             sdk-channel: release
+#           - name: release-candidate
+#             sdk-channel: rc
+# #           - name: Unofficial firmware
+# #             # example URL, replace with a valid one
+# #             # you can also use other modes for specifying SDK sources
+# #             sdk-index-url: https://flipper.example.com/directory.json
+# #             sdk-channel: dev
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: write
+#     steps:
+#       - name: checkout this repo
+#         uses: actions/checkout@v3
 #         with:
-#           name: api_versions
-#           path: api_versions.yaml
-#           retention-days: 1
+#           ref: ${{ matrix.sdk-channel }}
 
-      - name: commit and push changes
-        id: push_changes
-        if: ${{ steps.update_version.conclusion != 'skipped' }}
-        run: |
-          git pull
-          git --no-pager diff
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add api_versions.yaml
-          git commit -m "update api_versions"
-          git push
+#       - name: get current version
+#         id: get_current
+#         run: |
+#           echo "CURRENT=$(yq -r '.version' api_versions.yaml)" >> "$GITHUB_ENV"
+          
+#       - name: checkout upstream repo
+#         uses: actions/checkout@v3
+#         with:
+#           repository: flipperdevices/flipperzero-firmware
+#           path: './flipperzero-firmware'
+#           ref: ${{ matrix.name }}
+#           submodules: true
+      
+#       - name: get upstream API version
+#         id: get_upstream
+#         run: |
+#           echo "UPSTREAM=$(awk -F ',' 'NR==2{print $3}' flipperzero-firmware/firmware/targets/f7/api_symbols.csv)" >> $GITHUB_ENV
 
-      - name: create release
-        if: ${{ steps.push_changes.conclusion != 'skipped' }}
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
-          commit: ${{ matrix.sdk-channel }}
-          tag: ${{ matrix.name }}_${{ github.run_id }}
+#       - name: update api_versions.yaml
+#         id: update_version
+#         if: ${{ env.CURRENT < env.UPSTREAM }}
+#         uses: fjogeleit/yaml-update-action@main
+#         with:
+#           valueFile: 'api_versions.yaml'
+#           propertyPath: version
+#           value: ${{ env.UPSTREAM }}
+#           commitChange: false
+#           method: Update
+
+#       - name: build applications
+#         id: build_apps
+#         if: ${{ steps.update_version.conclusion != 'skipped' }}
+#         run: |
+#           cp -r source/* flipperzero-firmware/applications_user/
+#           cd flipperzero-firmware
+#           for app in $(grep -r "appid" applications_user/ | awk -F '=' 'BEGIN { ORS=" " }; {print $2}' | sed 's@"@@g;s@,@@g'); do ./fbt fap_$app; done
+
+#       - name: upload app artifacts
+#         if: ${{ steps.build_apps.conclusion != 'skipped' }}
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: ${{ github.event.repository.name }}_${{ github.ref_name }}_${{ github.run_id }}
+#           path: flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
+
+# #       - name: create yaml file artifact
+# #         uses: actions/upload-artifact@v3.1.2
+# #         if: ${{ steps.update_version.conclusion != 'skipped' }}
+# #         with:
+# #           name: api_versions
+# #           path: api_versions.yaml
+# #           retention-days: 1
+
+#       - name: commit and push changes
+#         id: push_changes
+#         if: ${{ steps.update_version.conclusion != 'skipped' }}
+#         run: |
+#           git pull
+#           git --no-pager diff
+#           git config user.name github-actions
+#           git config user.email github-actions@github.com
+#           git add api_versions.yaml
+#           git commit -m "update api_versions"
+#           git push
+
+#       - name: create release
+#         if: ${{ steps.push_changes.conclusion != 'skipped' }}
+#         uses: ncipollo/release-action@v1
+#         with:
+#           artifacts: flipperzero-firmware/build/f7-firmware-D/.extapps/*.fap
+#           commit: ${{ matrix.sdk-channel }}
+#           tag: ${{ matrix.name }}_${{ github.run_id }}
 
 
-#   build:
-#     uses: ./.github/workflows/build_apps.yml
-#     needs: compare_api_versions
+# #   build:
+# #     uses: ./.github/workflows/build_apps.yml
+# #     needs: compare_api_versions
